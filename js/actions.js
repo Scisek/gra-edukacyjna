@@ -8,9 +8,9 @@ import {
   recordMiss,
   setActive,
 } from "./storage.js";
-import { moduleKey, praise, progressKey, starsFor, unlockedIndex } from "./progress.js";
-import { grantPiece, piecesOf } from "./rewards.js";
-import { PIECES } from "./rewards.js";
+import { presentLevel } from "./audience.js";
+import { canPlayLevel, moduleKey, praise, progressKey, starsFor, trainingOpen, unlockedIndex } from "./progress.js";
+import { addXp, maybeAwardBadges, roundXp } from "./xp.js";
 
 export const app = {
   route: { name: "boot" },
@@ -100,12 +100,11 @@ export function startRound(subjectId, moduleId, levelIndex) {
     go("home");
     return;
   }
-  const unlocked = unlockedIndex(profile, subjectId, moduleId);
-  if (levelIndex > unlocked) {
+  if (!canPlayLevel(profile, subject, module, levelIndex)) {
     go("levels", { subjectId, moduleId });
     return;
   }
-  const level = module.levels[levelIndex];
+  const level = presentLevel(profile, module.levels[levelIndex], subject.id);
   const used = new Set();
   const questions = [];
   for (let index = 0; index < level.questions; index += 1) {
@@ -160,6 +159,59 @@ function lockAnswer(selectedId, timedOut) {
   redraw();
 }
 
+export function startTraining(subjectId, moduleId) {
+  const subject = findSubject(subjectId);
+  const module = findModule(subject, moduleId);
+  const profile = activeProfile();
+  if (!subject || !module || !profile || !trainingOpen(profile, subject, module)) {
+    go("levels", { subjectId, moduleId });
+    return;
+  }
+  const level = {
+    id: "trening",
+    title: "Trening",
+    group: "Trening",
+    tier: 3,
+    step: 2,
+    band: 4,
+    rank: 4,
+    questions: 6,
+    options: subjectId === "polski" ? 2 : 4,
+    seconds: 0,
+    training: true,
+    mix: module.role === "egzamin",
+    min: 20,
+    max: 100,
+    tableMin: 2,
+    tableMax: 12,
+  };
+  const shaped = presentLevel(profile, level, subjectId);
+  const used = new Set();
+  const questions = [];
+  for (let index = 0; index < shaped.questions; index += 1) {
+    questions.push(module.makeQuestion(shaped, used, profile.memory));
+  }
+  app.round = {
+    subjectId,
+    moduleId,
+    levelIndex: module.levels.length,
+    level: shaped,
+    questions,
+    index: 0,
+    correct: 0,
+    picked: null,
+    locked: false,
+    timedOut: false,
+    review: [],
+    praise: "",
+    finished: false,
+    result: null,
+    hintCount: 0,
+    hintLevels: {},
+  };
+  go("quiz");
+}
+
 export function pickAnswer(id) {
   lockAnswer(id, false);
 }
@@ -211,33 +263,35 @@ function conclude() {
   const stars = starsFor(round.correct, total, round.hintCount || 0);
   const subject = findSubject(round.subjectId);
   const module = findModule(subject, round.moduleId);
-  const level = module.levels[round.levelIndex];
+  const level = round.level || module.levels[round.levelIndex];
   const testing = isTestProfile(profile);
   let improved = false;
   let justUnlocked = false;
-  let reward = { granted: false, complete: true, have: PIECES, preview: true };
   let saved = false;
+  let xp = { amount: roundXp(level, stars), level: 1, breeds: [], into: 0, need: 1, leveled: false };
+  let badges = [];
   if (!testing) {
     const key = progressKey(round.subjectId, round.moduleId, level.id);
     const prev = profile.best[key];
     improved = !prev || stars > prev.stars || (stars === prev.stars && round.correct > prev.correct);
-    if (improved) profile.best[key] = { correct: round.correct, total, stars };
+    if (improved && !level.training) profile.best[key] = { correct: round.correct, total, stars };
+    if (level.training) {
+      const trainKey = progressKey(round.subjectId, round.moduleId, "trening");
+      const before = profile.best[trainKey];
+      if (!before || stars > before.stars) profile.best[trainKey] = { correct: round.correct, total, stars };
+    }
     const mkey = moduleKey(round.subjectId, round.moduleId);
     const unlocked = profile.unlocked[mkey] ?? 0;
-    if (stars >= 2 && round.levelIndex >= unlocked && round.levelIndex < module.levels.length - 1) {
+    if (!level.training && stars >= 2 && round.levelIndex >= unlocked && round.levelIndex < module.levels.length - 1) {
       profile.unlocked[mkey] = round.levelIndex + 1;
       justUnlocked = true;
     }
-    reward = {
-      granted: false,
-      complete: piecesOf(profile, round.subjectId) >= PIECES,
-      have: piecesOf(profile, round.subjectId),
-    };
-    if (stars >= 2) reward = grantPiece(profile, round.subjectId);
+    xp = addXp(profile, xp.amount);
+    badges = maybeAwardBadges(profile, subject, module);
     profile.stats.rounds += 1;
     saved = persist();
   }
-  round.result = { stars, total, improved, justUnlocked, reward, saved, test: testing, hints: round.hintCount || 0 };
+  round.result = { stars, total, improved, justUnlocked, saved, test: testing, hints: round.hintCount || 0, xp, badges };
   go("results");
   if (stars >= 1 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     celebrate(stars);

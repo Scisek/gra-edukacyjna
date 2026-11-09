@@ -8,7 +8,7 @@ Spokojna gra edukacyjna dla dzieci, po polsku. Działa w przeglądarce na telefo
 2. Na ekranie głównym wybierz przedmiot.
 3. Wybierz moduł i poziom.
 4. Odpowiadaj na pytania. Od razu widać, czy odpowiedź jest dobra, i jak brzmi poprawna.
-5. Runda z co najmniej dwiema gwiazdkami odsłania fragment mapy i odblokowuje kolejny poziom.
+5. Runda daje punkty doświadczenia (XP). Gdy pasek się zapełni, rośnie poziom gracza i dochodzi nowa rasa do kolekcji. Dwie gwiazdki odblokowują kolejny podpoziom.
 
 Przy dwóch profilach dzieci na górze jest przycisk **Graj jako …** — jedno stuknięcie przełącza dziecko. Profil **Rodzic** nie wchodzi w to przełączanie. **Zmień gracza** otwiera listę profili, postępy i nowego gracza.
 
@@ -18,17 +18,27 @@ Gwiazdki za rundę:
 - 2 gwiazdki — co najmniej 70%
 - 1 gwiazdka — co najmniej 50%
 
-Dwie gwiazdki odblokowują następny poziom w tym module.
+Każdy duży poziom (Łatwy, Średni, Trudny, Mistrz) dzieli się na kilka krótkich podpoziomów, na przykład 1.1, 1.2, 1.3. Otwierają się po kolei.
+
+Moduły jednego tematu (flagi, stolice, jedna zasada ortografii, samo dodawanie) to **nauka**. **Mix** to **egzamin** i otwiera się, gdy w nauce zdobędziesz dwie gwiazdki na całym danym poziomie. XP dostajesz tak samo w nauce i w egzaminie. Trudniejszy poziom daje wyraźnie więcej XP niż łatwy (mniej więcej dziesięć razy więcej na Mistrzu niż na Łatwym).
+
+Za ukończenie całego poziomu w Mix (dwie gwiazdki na każdym jego podpoziomie) jest **odznaka**, na przykład „Właściciel kota” albo „Profesor kociej nauki”. Nazwy zależą od obrazka profilu: kot zbiera koty, pies psy, zając króliki. Inne obrazki też mają przypisaną kolekcję — widać to przy wyborze obrazka.
+
+Po ostatnim podpoziomie jest **Trening**: nieskończona powtórka tego, co dziecko myli. Odblokowany podpoziom można grać ponownie, żeby poprawić gwiazdki.
 
 ### Geografia
 
-Trzy moduły: flagi (kraj po fladze), stolice (stolica kraju) oraz państwa (kraj po stolicy). W puli jest 193 członków ONZ oraz Watykan, Palestyna, Kosowo i Tajwan. Znane kraje są na początku, a na poziomie Mistrz można trafić na każdy kraj z listy.
+**Geografia – państwa** to flagi, stolice, państwa i egzamin Mix. W puli jest 193 członków ONZ oraz Watykan, Palestyna, Kosowo i Tajwan.
+
+**Geografia – Polska** to osobny przedmiot: województwa (także stuknięcie na mapie), stolice — kujawsko-pomorskie ma Bydgoszcz i Toruń, lubuskie Gorzów Wielkopolski i Zieloną Górę — oraz miasta. Jest ponad 150 miast z województwem, przybliżonym położeniem i ciekawostką.
+
+Przy zakładaniu profilu wybiera się **Dziecko** albo **Dorosły**. Dorosły od razu dostaje trudniejsze pytania: większe liczby, mniej znane kraje i miasta, słowa z kilkoma pułapkami. Rodzic nadal widzi wszystko. Znane kraje są na początku, a na poziomie Mistrz można trafić na każdy kraj z listy.
 
 W geografii jest też moduł **Mix** (flaga, stolica albo kraj). W matematyce dodawanie i odejmowanie są jednym modułem, a **Mix** losuje wszystkie działania. W ortografii dziecko uzupełnia lukę w słowie (ó/u, rz/ż, ch/h, ą/om, ę/en); jest też **Mix** zasad.
 
 Przy pytaniu z geografii mała **Podpowiedź** (?) pokazuje najpierw kontynent, a drugi raz zabiera jedną złą odpowiedź. Każda podpowiedź obniża wynik rundy o ćwierć pytania. Po odpowiedzi przycisk **Dalej** jest nad krótką kartą kraju.
 
-Gra pamięta, które pytania dane dziecko myli, i częściej do nich wraca. W postępach gracza można wyczyścić samą tę pamięć albo same gwiazdki i mapy. Odblokowany poziom ma przycisk **Zagraj ponownie**.
+Gra pamięta, które pytania dane dziecko myli, i częściej do nich wraca. W postępach gracza można wyczyścić samą tę pamięć albo same gwiazdki, XP i kolekcję. Odblokowany podpoziom można grać ponownie.
 
 Na górze w trakcie gry jest jedna linia: tytuł, imię i **Wróć** (jeden krok wstecz). Zmiana gracza jest na ekranie głównym.
 
@@ -65,19 +75,25 @@ Odejmowanie nie schodzi poniżej zera. Dzielenie zawsze wychodzi bez reszty.
 
 ## Profile
 
-Każdy gracz ma własne gwiazdki, odblokowane poziomy, mapę i listę „Warto powtórzyć” (kraje, słowa i działania, które najczęściej się mylą).
+Każdy gracz ma własne gwiazdki, odblokowane podpoziomy, XP, kolekcję ras i listę „Warto powtórzyć” (kraje, słowa i działania, które najczęściej się mylą).
 
-Profil **Rodzic** jest zawsze na liście graczy i wygląda inaczej niż profile dzieci. To tryb testowy: otwarte są wszystkie przedmioty, moduły i poziomy, a mapy i skarby widać w całości. Nic z tej rozgrywki nie trafia do zapisu — ani punkty, ani statystyki, ani fragmenty mapy — i nie zmienia profili dzieci. Podczas gry widać napis **Tryb testowy**. Odświeżenie strony wraca do ostatniego dziecka, bo wybór Rodzica nie jest zapisywany.
+Profil **Rodzic** jest zawsze na liście graczy i wygląda inaczej niż profile dzieci. To tryb testowy: otwarte są wszystkie przedmioty, moduły i podpoziomy, a kolekcja ras jest widoczna w całości. Nic z tej rozgrywki nie trafia do zapisu i nie zmienia profili dzieci. Podczas gry widać napis **test**. Odświeżenie strony wraca do ostatniego dziecka, bo wybór Rodzica nie jest zapisywany.
 
 **Wyczyść postępy** na karcie gracza kasuje wyniki, ale zostawia imię i obrazek. **Usuń gracza** zabiera profil z tego urządzenia.
 
 Zapis jest w `localStorage` tej przeglądarki. Inna przeglądarka, inne urządzenie albo wyczyszczenie danych strony zaczyna od zera.
 
-## Mapy i skarby
+## Poziom gracza i kolekcja
 
-Są trzy wyspy: geografii, słów i liczb. Każda ma 6 fragmentów. Fragment spada za rundę z co najmniej dwiema gwiazdkami w przedmiocie tej wyspy. Pełna wyspa odsłania swój skarb. Trzy skarby odsłaniają koronę wiedzy.
+Na górze widać pasek XP i napis **Poziom gracza**. Ten sam przelicznik działa w każdym module. Mistrz daje około dziesięć razy więcej XP niż Łatwy, Średni i Trudny leżą pomiędzy, a kolejne podpoziomy w obrębie poziomu dokładają jeszcze odrobinę.
 
-Ekran **Mapy i skarby** jest na stronie głównej.
+Gdy pasek się wypełni, poziom rośnie i dziecko dostaje następną rasę ze swojej kolekcji. Karta rasy (pochodzenie, wielkość, charakter, ciekawostka) jest po polsku w `js/data/breeds.js`. Rysunki to pliki SVG w `assets/breeds/` — można je podmienić.
+
+Odznaki są osobno dla każdego egzaminu Mix (przedmiot i poziom trudności). Nazwy zależą od kolekcji obrazka: koty, psy, dinozaury, komputery, szczyty albo genealogia. XP jest jedno, wspólne dla wszystkich modułów.
+
+Nowy moduł dodaje się plikiem w `js/modules/` i `js/data/`, a potem jedną linijką importu w `js/registry.js`.
+
+Dawne mapy wysp nie są już nagrodą. Zapisane fragmenty mapy przy pierwszym wejściu zamieniają się na XP, więc stary wynik nie znika.
 
 ## Uruchomienie na komputerze
 
@@ -137,7 +153,7 @@ Poziom opisuje `id`, `title`, `band`, `questions`, `options`, `seconds` (0 wył�
 
 `figure` może być obrazkiem `{ type: "image", src, alt }`, dużym napisem `{ type: "title", text }`, działaniem `{ type: "equation", text }` albo znaczeniem `{ type: "meaning", text }`.
 
-Nowy przedmiot dopisz do tablicy `subjects`. Kafelek „wkrótce” to przedmiot ze `status: "soon"` i bez modułów. Jeśli przedmiot ma dawać fragmenty mapy, dodaj wyspę o **tym samym `id`** w `js/rewards.js`.
+Nowy przedmiot dopisz do tablicy `subjects`. Kafelek „wkrótce” to przedmiot ze `status: "soon"` i bez modułów. Moduł nauki ma `role: "nauka"`, a Mix `role: "egzamin"`.
 
 Dane geografii: `js/data/countries.js`. Ortografia: `js/data/spelling.js`. Matematyka jest losowana w `js/modules/math.js`.
 
