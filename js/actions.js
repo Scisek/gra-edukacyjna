@@ -125,6 +125,8 @@ export function startRound(subjectId, moduleId, levelIndex) {
     praise: "",
     finished: false,
     result: null,
+    hintCount: 0,
+    hintLevels: {},
   };
   go("quiz");
 }
@@ -160,6 +162,25 @@ export function pickAnswer(id) {
   lockAnswer(id, false);
 }
 
+export function useHint() {
+  const round = app.round;
+  const question = currentQuestion();
+  if (!round || !question || round.locked || !question.countryId) return;
+  const level = round.hintLevels[round.index] || 0;
+  if (level >= 2) return;
+  round.hintLevels[round.index] = level + 1;
+  round.hintCount += 1;
+  if (level + 1 === 2) {
+    const hidden = new Set(question.hiddenIds || []);
+    const wrongs = question.options.filter((option) => option.id !== question.correctId && !hidden.has(option.id));
+    if (wrongs.length > 1) {
+      const victim = wrongs[Math.floor(Math.random() * wrongs.length)];
+      question.hiddenIds = [...hidden, victim.id];
+    }
+  }
+  redraw();
+}
+
 function timeoutAnswer() {
   lockAnswer(null, true);
 }
@@ -185,7 +206,7 @@ function conclude() {
   if (!round || !profile || round.finished) return;
   round.finished = true;
   const total = round.questions.length;
-  const stars = starsFor(round.correct, total);
+  const stars = starsFor(round.correct, total, round.hintCount || 0);
   const subject = findSubject(round.subjectId);
   const module = findModule(subject, round.moduleId);
   const level = module.levels[round.levelIndex];
@@ -214,7 +235,7 @@ function conclude() {
     profile.stats.rounds += 1;
     saved = persist();
   }
-  round.result = { stars, total, improved, justUnlocked, reward, saved, test: testing };
+  round.result = { stars, total, improved, justUnlocked, reward, saved, test: testing, hints: round.hintCount || 0 };
   go("results");
   if (stars >= 1 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     celebrate(stars);

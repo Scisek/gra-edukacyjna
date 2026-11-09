@@ -9,6 +9,7 @@ import {
   pickAnswer,
   startRound,
   switchTo,
+  useHint,
 } from "./actions.js";
 import {
   activeProfile,
@@ -34,6 +35,8 @@ import {
   piecesOf,
 } from "./rewards.js";
 import { topMisses } from "./review.js";
+import { countryById } from "./data/countries.js";
+import { areaText, peopleText, sizeText } from "./geo-info.js";
 
 function avatarImg(id, className) {
   const avatar = avatarById(id);
@@ -368,6 +371,16 @@ function figureBlock(figure) {
   return el("p", { class: "title-figure", text: figure.text });
 }
 
+function factCard(country) {
+  return el("section", { class: "fact-card" }, [
+    el("h2", { text: country.name }),
+    el("p", {}, [el("strong", { text: "Kontynent. " }), country.continent]),
+    el("p", {}, [el("strong", { text: "Powierzchnia. " }), `${areaText(country.area)} — ${sizeText(country)}.`]),
+    el("p", {}, [el("strong", { text: "Ludność. " }), `${peopleText(country.population)}.`]),
+    el("p", { class: "fact-card__fact", text: country.fact }),
+  ]);
+}
+
 function viewQuiz() {
   const round = app.round;
   const profile = activeProfile();
@@ -375,7 +388,10 @@ function viewQuiz() {
   const question = round.questions[round.index];
   const subject = findSubject(round.subjectId);
   const module = findModule(subject, round.moduleId);
-  const odd = question.options.length % 2 === 1;
+  const hintLevel = round.hintLevels?.[round.index] || 0;
+  const country = question.countryId ? countryById(question.countryId) : null;
+  const visibleOptions = question.options.filter((option) => !(question.hiddenIds || []).includes(option.id));
+  const odd = visibleOptions.length % 2 === 1;
   return screen([
     back("Przerwij", () => go("levels", { subjectId: round.subjectId, moduleId: round.moduleId })),
     el("div", { class: "quiz-top" }, [
@@ -391,7 +407,15 @@ function viewQuiz() {
     ]) : null,
     el("h1", { class: "prompt", text: question.prompt }),
     figureBlock(question.figure),
-    el("div", { class: odd ? "choices is-odd" : "choices" }, question.options.map((option) => {
+    country && !round.locked ? el("button", {
+      type: "button",
+      class: "btn btn-ghost btn-block hint-btn",
+      disabled: hintLevel >= 2,
+      onClick: useHint,
+    }, hintLevel === 0 ? "Podpowiedź" : hintLevel === 1 ? "Jeszcze podpowiedź" : "Podpowiedzi wykorzystane") : null,
+    country && hintLevel >= 1 ? el("p", { class: "hint-line", text: `Kontynent: ${country.continent}` }) : null,
+    country && hintLevel >= 2 ? el("p", { class: "hint-line", text: "Jedna zła odpowiedź zniknęła. Podpowiedź trochę obniża gwiazdki." }) : null,
+    el("div", { class: odd ? "choices is-odd" : "choices" }, visibleOptions.map((option) => {
       const correct = round.locked && option.id === question.correctId;
       const wrong = round.locked && round.picked === option.id && option.id !== question.correctId;
       return el("button", {
@@ -417,6 +441,7 @@ function viewQuiz() {
           : ` Poprawna odpowiedź: ${question.correctLabel}.`),
       ]),
       question.note ? el("p", { class: "note", text: question.note }) : null,
+      country ? factCard(country) : null,
       el("button", { type: "button", class: "btn btn-primary", onClick: nextQuestion }, round.index + 1 >= round.questions.length ? "Zobacz wynik" : "Dalej"),
     ]) : null,
   ]);
@@ -445,6 +470,7 @@ function viewResults() {
       !test && improved ? el("p", { class: "hint", text: "Nowy rekord na tym poziomie." }) : null,
       !test && justUnlocked ? el("p", { class: "hint", text: `Odblokowano poziom ${module.levels[nextIndex].title}.` }) : null,
       el("p", { class: "lede", text: rewardText }),
+      round.result.hints ? el("p", { class: "hint", text: `Podpowiedzi: ${round.result.hints}. Każda obniża wynik o ćwierć pytania.` }) : null,
     ]),
     round.review.length ? el("section", { class: "review" }, [
       el("h2", { text: "Warto zapamiętać" }),

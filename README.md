@@ -22,7 +22,11 @@ Dwie gwiazdki odblokowują następny poziom w tym module.
 
 ### Geografia
 
-Trzy moduły: flagi (kraj po fladze), stolice (stolica kraju) oraz państwa (kraj po stolicy).
+Trzy moduły: flagi (kraj po fladze), stolice (stolica kraju) oraz państwa (kraj po stolicy). W puli jest 193 członków ONZ oraz Watykan, Palestyna, Kosowo i Tajwan. Znane kraje są na początku, a na poziomie Mistrz można trafić na każdy kraj z listy.
+
+Przy pytaniu jest **Podpowiedź**: najpierw kontynent, a drugi raz znika jedna zła odpowiedź. Każda podpowiedź obniża wynik rundy o ćwierć pytania, więc gwiazdki spadają tylko trochę. Po odpowiedzi widać kartę kraju: kontynent, powierzchnię (z porównaniem do Polski), ludność i krótką ciekawostkę.
+
+Gra nie odtwarza żadnych dźwięków.
 
 - **Łatwy** — znane kraje, 3 odpowiedzi
 - **Średni** — więcej krajów Europy i świata, 4 odpowiedzi
