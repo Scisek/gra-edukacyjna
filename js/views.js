@@ -20,6 +20,7 @@ import {
   nameError,
   PARENT_ID,
   profiles,
+  resetMemory,
   resetProfile,
   storageWorks,
   totalStars,
@@ -67,40 +68,49 @@ function brandButton() {
   ]);
 }
 
-function playerChip(profile, currentId) {
-  const currentOne = profile.id === currentId;
+function goBack() {
+  const route = app.route;
+  const round = app.round;
+  if (route.name === "quiz" || route.name === "results") {
+    go("levels", {
+      subjectId: round?.subjectId || route.subjectId,
+      moduleId: round?.moduleId || route.moduleId,
+    });
+    return;
+  }
+  if (route.name === "levels") go("subject", { subjectId: route.subjectId });
+  else if (route.name === "subject" || route.name === "maps") go("home");
+  else if (route.name === "stats" || route.name === "create") go("profiles");
+  else go("home");
+}
+
+function playerChip(profile) {
   const testing = isTestProfile(profile);
-  return el("button", {
-    type: "button",
-    class: `chip${currentOne ? " is-current" : ""}${testing ? " is-test" : ""}`,
-    "aria-current": currentOne ? "true" : false,
-    onClick: () => {
-      if (currentOne) go("home");
-      else switchTo(profile.id);
-    },
+  const onHome = app.route.name === "home";
+  return el(onHome ? "button" : "div", {
+    type: onHome ? "button" : null,
+    class: `chip is-current${testing ? " is-test" : ""}`,
+    "aria-label": onHome ? `Zmień gracza, teraz ${profile.name}` : null,
+    onClick: onHome ? () => go("profiles") : null,
   }, [
     avatarImg(profile.avatar, "avatar avatar-sm"),
-    el("span", { text: currentOne ? profile.name : `Graj jako ${profile.name}` }),
+    el("span", { class: "chip__name", text: profile.name }),
+    testing ? el("span", { class: "test-flag", text: "test" }) : null,
   ]);
 }
 
 function switcher() {
   const current = activeProfile();
   if (!current || app.route.name === "profiles" || app.route.name === "create") return null;
-  const kids = profiles();
-  const testing = isTestProfile(current);
-  const chips = !testing && kids.length === 2
-    ? kids.map((profile) => playerChip(profile, current.id))
-    : [playerChip(current, current.id)];
-
+  const inGame = app.route.name !== "home";
   return el("div", { class: "switcher" }, [
-    ...chips,
-    testing ? el("span", { class: "test-flag", text: "Tryb testowy" }) : null,
-    el("button", {
+    playerChip(current),
+    inGame ? el("button", {
       type: "button",
-      class: "btn btn-ghost",
-      onClick: () => go("profiles"),
-    }, "Zmień gracza"),
+      class: "back-mini",
+      "aria-label": "Wróć",
+      onClick: goBack,
+    }, "←") : null,
   ]);
 }
 
@@ -346,6 +356,7 @@ function viewLevels() {
               ? el("p", { class: "tile__meta", text: `Najlepiej: ${best.correct}/${best.total}` })
               : el("p", { class: "tile__meta", text: "Jeszcze bez wyniku" }),
           testing ? null : best ? stars(best.stars) : stars(0),
+          !locked && best ? el("p", { class: "hint", text: "Możesz grać ten poziom ponownie." }) : null,
           locked ? el("p", { class: "hint", text: `Zdobyj 2 gwiazdki na poziomie ${previous.title}.` }) : null,
         ]),
         el("button", {
@@ -353,7 +364,7 @@ function viewLevels() {
           class: "btn btn-primary",
           disabled: locked,
           onClick: () => startRound(subject.id, module.id, index),
-        }, locked ? "Zablokowany" : "Graj"),
+        }, locked ? "Zablokowany" : best ? "Zagraj ponownie" : "Graj"),
       ]);
     })),
   ]);
@@ -367,16 +378,25 @@ function figureBlock(figure) {
     ]);
   }
   if (figure.type === "equation") return el("p", { class: "equation", text: figure.text });
+  if (figure.type === "gap") {
+    return el("div", { class: "gap-card" }, [
+      el("p", { class: "gap-meaning", text: figure.meaning }),
+      el("p", { class: "gap-word" }, [
+        figure.before,
+        el("span", { class: figure.missing.length > 1 ? "gap gap-wide" : "gap", text: "\u00a0" }),
+        figure.after,
+      ]),
+    ]);
+  }
   if (figure.type === "meaning") return el("p", { class: "meaning", text: figure.text });
   return el("p", { class: "title-figure", text: figure.text });
 }
 
 function factCard(country) {
   return el("section", { class: "fact-card" }, [
-    el("h2", { text: country.name }),
-    el("p", {}, [el("strong", { text: "Kontynent. " }), country.continent]),
-    el("p", {}, [el("strong", { text: "Powierzchnia. " }), `${areaText(country.area)} — ${sizeText(country)}.`]),
-    el("p", {}, [el("strong", { text: "Ludność. " }), `${peopleText(country.population)}.`]),
+    el("p", { class: "fact-card__title", text: country.name }),
+    el("p", { text: `${country.continent} · ${areaText(country.area)} · ${sizeText(country)}` }),
+    el("p", { text: `Ludność: ${peopleText(country.population)}` }),
     el("p", { class: "fact-card__fact", text: country.fact }),
   ]);
 }
@@ -385,6 +405,7 @@ function viewQuiz() {
   const round = app.round;
   const profile = activeProfile();
   if (!round || !profile) return viewHome();
+  const quizClass = "quiz";
   const question = round.questions[round.index];
   const subject = findSubject(round.subjectId);
   const module = findModule(subject, round.moduleId);
@@ -393,7 +414,6 @@ function viewQuiz() {
   const visibleOptions = question.options.filter((option) => !(question.hiddenIds || []).includes(option.id));
   const odd = visibleOptions.length % 2 === 1;
   return screen([
-    back("Przerwij", () => go("levels", { subjectId: round.subjectId, moduleId: round.moduleId })),
     el("div", { class: "quiz-top" }, [
       el("p", { class: "kicker", text: `${module.title} · ${round.level.title}` }),
       el("p", { class: "quiz-count", text: `Pytanie ${round.index + 1} z ${round.questions.length}` }),
@@ -405,16 +425,18 @@ function viewQuiz() {
         el("span", { "data-timer-bar": "true" }),
       ]),
     ]) : null,
-    el("h1", { class: "prompt", text: question.prompt }),
+    el("div", { class: "prompt-row" }, [
+      country ? el("button", {
+        type: "button",
+        class: "hint-mini",
+        disabled: round.locked || hintLevel >= 2,
+        "aria-label": hintLevel === 0 ? "Podpowiedź" : "Jeszcze podpowiedź",
+        onClick: useHint,
+      }, "?") : el("span", { class: "hint-mini hint-mini--spacer", "aria-hidden": "true" }),
+      el("h1", { class: "prompt", text: question.prompt }),
+    ]),
     figureBlock(question.figure),
-    country && !round.locked ? el("button", {
-      type: "button",
-      class: "btn btn-ghost btn-block hint-btn",
-      disabled: hintLevel >= 2,
-      onClick: useHint,
-    }, hintLevel === 0 ? "Podpowiedź" : hintLevel === 1 ? "Jeszcze podpowiedź" : "Podpowiedzi wykorzystane") : null,
     country && hintLevel >= 1 ? el("p", { class: "hint-line", text: `Kontynent: ${country.continent}` }) : null,
-    country && hintLevel >= 2 ? el("p", { class: "hint-line", text: "Jedna zła odpowiedź zniknęła. Podpowiedź trochę obniża gwiazdki." }) : null,
     el("div", { class: odd ? "choices is-odd" : "choices" }, visibleOptions.map((option) => {
       const correct = round.locked && option.id === question.correctId;
       const wrong = round.locked && round.picked === option.id && option.id !== question.correctId;
@@ -441,10 +463,10 @@ function viewQuiz() {
           : ` Poprawna odpowiedź: ${question.correctLabel}.`),
       ]),
       question.note ? el("p", { class: "note", text: question.note }) : null,
-      country ? factCard(country) : null,
-      el("button", { type: "button", class: "btn btn-primary", onClick: nextQuestion }, round.index + 1 >= round.questions.length ? "Zobacz wynik" : "Dalej"),
+      el("button", { type: "button", class: "btn btn-primary btn-block", onClick: nextQuestion }, round.index + 1 >= round.questions.length ? "Zobacz wynik" : "Dalej"),
     ]) : null,
-  ]);
+    round.locked && country ? factCard(country) : null,
+  ], quizClass);
 }
 
 function viewResults() {
@@ -581,11 +603,17 @@ function viewStats() {
       ])))
       : el("p", { class: "hint", text: "Tu pojawią się kraje, słowa i działania, które wracają najczęściej." }),
     el("div", { class: "stack" }, [
+      el("p", { class: "hint", text: "Postępy to gwiazdki, poziomy i mapy. Pamięć odpowiedzi to tylko to, które pytania wracają częściej." }),
       el("button", {
         type: "button",
         class: "btn btn-ghost btn-block",
         onClick: () => openModal("reset", profile.id),
       }, "Wyczyść postępy"),
+      el("button", {
+        type: "button",
+        class: "btn btn-ghost btn-block",
+        onClick: () => openModal("memory", profile.id),
+      }, "Wyczyść pamięć odpowiedzi"),
       el("button", {
         type: "button",
         class: "btn btn-quiet btn-block",
@@ -599,13 +627,22 @@ function modal() {
   if (!app.modal) return null;
   const profile = profiles().find((item) => item.id === app.modal.profileId);
   if (!profile) return null;
-  const reset = app.modal.type === "reset";
+  const kind = app.modal.type;
+  const title = kind === "reset"
+    ? "Wyczyścić postępy?"
+    : kind === "memory"
+      ? "Wyczyścić pamięć odpowiedzi?"
+      : "Usunąć gracza?";
+  const body = kind === "reset"
+    ? `Znikną gwiazdki, poziomy i mapa gracza ${profile.name}. Pamięć pytań zostaje, więc trudniejsze słowa i kraje nadal będą wracać.`
+    : kind === "memory"
+      ? `Gra ${profile.name} znowu pokaże wszystkie pytania tak samo często. Gwiazdki, poziomy i mapa zostają.`
+      : `Profil ${profile.name} zniknie z tego urządzenia.`;
+  const confirm = kind === "delete" ? "Tak, usuń" : "Tak, wyczyść";
   return el("div", { class: "modal", role: "dialog", "aria-modal": "true", "aria-labelledby": "modal-title" }, [
     el("div", { class: "modal__card" }, [
-      el("h2", { id: "modal-title", text: reset ? "Wyczyścić postępy?" : "Usunąć gracza?" }),
-      el("p", { text: reset
-        ? `Znikną gwiazdki, poziomy i mapa gracza ${profile.name}. Imię i obrazek zostaną.`
-        : `Profil ${profile.name} zniknie z tego urządzenia.` }),
+      el("h2", { id: "modal-title", text: title }),
+      el("p", { text: body }),
       el("div", { class: "row" }, [
         el("button", { type: "button", class: "btn btn-ghost", onClick: closeModal }, "Anuluj"),
         el("button", {
@@ -613,12 +650,13 @@ function modal() {
           class: "btn btn-primary",
           "data-focus": "true",
           onClick: () => {
-            if (reset) resetProfile(profile.id);
+            if (kind === "reset") resetProfile(profile.id);
+            else if (kind === "memory") resetMemory(profile.id);
             else deleteProfile(profile.id);
             app.modal = null;
-            go("profiles");
+            go(kind === "memory" ? "stats" : "profiles", kind === "memory" ? { profileId: profile.id } : {});
           },
-        }, reset ? "Tak, wyczyść" : "Tak, usuń"),
+        }, confirm),
       ]),
     ]),
   ]);

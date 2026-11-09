@@ -21,7 +21,7 @@ export function describeMiss(key) {
   if (key.startsWith("spell:")) {
     const word = wordById(key.slice(6));
     if (!word) return null;
-    return { title: word.correct, detail: word.meaning };
+    return { title: word.word, detail: word.meaning };
   }
   if (key.startsWith("math:")) {
     const title = MATH_NAMES[key.slice(5)];

@@ -1,21 +1,21 @@
 import { countries } from "../data/countries.js";
-import { pick, shuffle } from "../util.js";
+import { pick, recallWeight, shuffle, weightedPick } from "../util.js";
 
 function poolFor(band) {
   return countries.filter((country) => country.band <= band);
 }
 
-function chooseAnswer(source, used, levelBand) {
+function chooseAnswer(source, used, levelBand, memory) {
   let bag = source.filter((country) => !used.has(country.id));
   if (!bag.length) bag = source;
   if (levelBand >= 4) {
     const rare = bag.filter((country) => country.band >= 3);
-    if (rare.length && Math.random() < 0.75) return pick(rare);
+    if (rare.length && Math.random() < 0.75) bag = rare;
   } else if (levelBand === 3) {
     const wider = bag.filter((country) => country.band >= 2);
-    if (wider.length && Math.random() < 0.65) return pick(wider);
+    if (wider.length && Math.random() < 0.65) bag = wider;
   }
-  return pick(bag);
+  return weightedPick(bag, (country) => recallWeight(memory?.[`geo:${country.id}`]));
 }
 
 function distractors(source, answer, count, preferLike) {
@@ -28,9 +28,9 @@ function distractors(source, answer, count, preferLike) {
   return preferred.concat(sameRegion, rest).slice(0, count);
 }
 
-function build(level, used, mode) {
+function build(level, used, mode, memory) {
   const source = poolFor(level.band);
-  const answer = chooseAnswer(source, used, level.band);
+  const answer = chooseAnswer(source, used, level.band, memory);
   used.add(answer.id);
   const wrongs = distractors(source, answer, level.options - 1, level.band >= 4);
   const asCountry = (country) => ({ id: country.id, label: country.name });
@@ -77,16 +77,21 @@ function build(level, used, mode) {
   };
 }
 
-export function makeFlagQuestion(level, used) {
-  return build(level, used, "flag");
+export function makeFlagQuestion(level, used, memory) {
+  return build(level, used, "flag", memory);
 }
 
-export function makeCapitalQuestion(level, used) {
-  return build(level, used, "capital");
+export function makeCapitalQuestion(level, used, memory) {
+  return build(level, used, "capital", memory);
 }
 
-export function makeCountryQuestion(level, used) {
-  return build(level, used, "country");
+export function makeCountryQuestion(level, used, memory) {
+  return build(level, used, "country", memory);
+}
+
+export function makeGeoMixQuestion(level, used, memory) {
+  const mode = pick(["flag", "capital", "country"]);
+  return build(level, used, mode, memory);
 }
 
 export function geographyLevels(secondsOnMaster) {
