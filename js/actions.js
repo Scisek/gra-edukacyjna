@@ -4,6 +4,7 @@ import {
   isTestProfile,
   persist,
   recordAnswer,
+  recordMemory,
   recordMiss,
   setActive,
 } from "./storage.js";
@@ -108,7 +109,7 @@ export function startRound(subjectId, moduleId, levelIndex) {
   const used = new Set();
   const questions = [];
   for (let index = 0; index < level.questions; index += 1) {
-    questions.push(module.makeQuestion(level, used));
+    questions.push(module.makeQuestion(level, used, profile.memory));
   }
   app.round = {
     subjectId,
@@ -152,6 +153,7 @@ function lockAnswer(selectedId, timedOut) {
   if (!ok) round.review.push(question.review);
   if (!isTestProfile(profile)) {
     recordAnswer(profile, ok);
+    recordMemory(profile, question.key, ok);
     if (!ok) recordMiss(profile, question.key);
     persist();
   }

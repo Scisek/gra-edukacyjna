@@ -5,9 +5,9 @@
    makeQuestion zwraca { key, prompt, figure, options, correctId, correctLabel, note, review }.
    figure: { type: "image", src, alt } | { type: "title"|"equation"|"meaning", text }. */
 
-import { makeCapitalQuestion, makeCountryQuestion, makeFlagQuestion, geographyLevels } from "./modules/geography.js";
-import { makeSpellingQuestion, spellingLevels } from "./modules/spelling.js";
-import { makeMathQuestion, mathLevels } from "./modules/math.js";
+import { makeCapitalQuestion, makeCountryQuestion, makeFlagQuestion, makeGeoMixQuestion, geographyLevels } from "./modules/geography.js";
+import { makeSpellingMixQuestion, makeSpellingQuestion, spellingLevels, spellingMixLevels } from "./modules/spelling.js";
+import { makeAddSubQuestion, makeMathMixQuestion, makeMathQuestion, mathLevels } from "./modules/math.js";
 
 function mathModule(id, title, blurb) {
   return {
@@ -52,6 +52,14 @@ export const subjects = [
         levels: geographyLevels(20),
         makeQuestion: makeCountryQuestion,
       },
+      {
+        id: "mix",
+        title: "Mix",
+        blurb: "Flaga, stolica albo kraj — jak wypadnie",
+        status: "ready",
+        levels: geographyLevels(20),
+        makeQuestion: makeGeoMixQuestion,
+      },
     ],
   },
   {
@@ -64,10 +72,18 @@ export const subjects = [
       {
         id: "ortografia",
         title: "Ortografia",
-        blurb: "ó/u, rz/ż, ch/h i słowa mieszane",
+        blurb: "Uzupełnij lukę: ó/u, rz/ż, ch/h, ą/om, ę/en",
         status: "ready",
         levels: spellingLevels(),
         makeQuestion: makeSpellingQuestion,
+      },
+      {
+        id: "mix",
+        title: "Mix",
+        blurb: "Wszystkie zasady ortografii po trochu",
+        status: "ready",
+        levels: spellingMixLevels(),
+        makeQuestion: makeSpellingMixQuestion,
       },
       {
         id: "czytanie",
@@ -84,10 +100,24 @@ export const subjects = [
     art: "assets/art/przedmiot-matematyka.svg",
     status: "ready",
     modules: [
-      mathModule("dodawanie", "Dodawanie", "Składaj liczby"),
-      mathModule("odejmowanie", "Odejmowanie", "Odejmuj bez wyniku mniejszego od zera"),
+      {
+        id: "dodawanie-odejmowanie",
+        title: "Dodawanie i odejmowanie",
+        blurb: "Plus i minus, bez wyniku mniejszego od zera",
+        status: "ready",
+        levels: mathLevels("dodawanie-odejmowanie"),
+        makeQuestion: makeAddSubQuestion,
+      },
       mathModule("mnozenie", "Mnożenie", "Tabliczka mnożenia i większe iloczyny"),
       mathModule("dzielenie", "Dzielenie", "Tylko działania, które wychodzą bez reszty"),
+      {
+        id: "mix",
+        title: "Mix",
+        blurb: "Dodawanie, odejmowanie, mnożenie i dzielenie",
+        status: "ready",
+        levels: mathLevels("mix"),
+        makeQuestion: makeMathMixQuestion,
+      },
     ],
   },
   {

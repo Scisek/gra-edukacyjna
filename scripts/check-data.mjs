@@ -30,7 +30,8 @@ for (const country of countries) {
   if (codes.has(country.code)) fail(`powtórzony kod ${country.code}`);
   codes.add(country.code);
   if (!country.name || !country.capital) fail(`pusta nazwa ${country.code}`);
-  if (![1, 2, 3].includes(country.band)) fail(`zły band ${country.code}`);
+  if (![1, 2, 3, 4].includes(country.band)) fail(`zły band ${country.code}`);
+  if (!country.continent || !country.fact || !country.area || !country.population) fail(`brak karty kraju ${country.code}`);
   const previous = capitals.get(country.capital);
   if (previous) fail(`ta sama stolica: ${country.capital} (${previous}, ${country.code})`);
   capitals.set(country.capital, country.code);
@@ -50,11 +51,10 @@ const ids = new Set();
 for (const word of words) {
   if (ids.has(word.id)) fail(`powtórzone słowo ${word.id}`);
   ids.add(word.id);
-  if (word.wrong.includes(word.correct)) fail(`${word.id}: poprawna forma jest wśród błędnych`);
-  if (new Set(word.wrong).size !== word.wrong.length) fail(`${word.id}: powtórzony dystraktor`);
-  if (word.band === 1 && word.wrong.length < 1) fail(`${word.id}: za mało dystraktorów`);
-  if (word.band > 1 && word.wrong.length < 2) fail(`${word.id}: za mało dystraktorów`);
-  if (leaks(word.meaning, word.correct)) fail(`${word.id}: znaczenie zawiera „${word.correct}”`);
+  if (`${word.before}${word.missing}${word.after}` !== word.word) fail(`${word.id}: luka nie składa słowa`);
+  if (!word.options.includes(word.missing)) fail(`${word.id}: brak poprawnej luki`);
+  if (new Set(word.options).size !== word.options.length || word.options.length < 2) fail(`${word.id}: złe opcje`);
+  if (leaks(word.meaning, word.word)) fail(`${word.id}: znaczenie zawiera słowo`);
   if (!word.hint || !word.meaning) fail(`${word.id}: pusta podpowiedź lub znaczenie`);
 }
 

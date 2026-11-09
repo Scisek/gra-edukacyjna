@@ -24,7 +24,13 @@ Dwie gwiazdki odblokowują następny poziom w tym module.
 
 Trzy moduły: flagi (kraj po fladze), stolice (stolica kraju) oraz państwa (kraj po stolicy). W puli jest 193 członków ONZ oraz Watykan, Palestyna, Kosowo i Tajwan. Znane kraje są na początku, a na poziomie Mistrz można trafić na każdy kraj z listy.
 
-Przy pytaniu jest **Podpowiedź**: najpierw kontynent, a drugi raz znika jedna zła odpowiedź. Każda podpowiedź obniża wynik rundy o ćwierć pytania, więc gwiazdki spadają tylko trochę. Po odpowiedzi widać kartę kraju: kontynent, powierzchnię (z porównaniem do Polski), ludność i krótką ciekawostkę.
+W geografii jest też moduł **Mix** (flaga, stolica albo kraj). W matematyce dodawanie i odejmowanie są jednym modułem, a **Mix** losuje wszystkie działania. W ortografii dziecko uzupełnia lukę w słowie (ó/u, rz/ż, ch/h, ą/om, ę/en); jest też **Mix** zasad.
+
+Przy pytaniu z geografii mała **Podpowiedź** (?) pokazuje najpierw kontynent, a drugi raz zabiera jedną złą odpowiedź. Każda podpowiedź obniża wynik rundy o ćwierć pytania. Po odpowiedzi przycisk **Dalej** jest nad krótką kartą kraju.
+
+Gra pamięta, które pytania dane dziecko myli, i częściej do nich wraca. W postępach gracza można wyczyścić samą tę pamięć albo same gwiazdki i mapy. Odblokowany poziom ma przycisk **Zagraj ponownie**.
+
+Na górze w trakcie gry jest jedna linia: tytuł, imię i **Wróć** (jeden krok wstecz). Zmiana gracza jest na ekranie głównym.
 
 Gra nie odtwarza żadnych dźwięków.
 
@@ -145,7 +151,7 @@ node scripts/check-data.mjs
 
 ### Kolory, czcionki, rogi, cienie
 
-Wszystko, co składa się na motyw interfejsu, jest w `css/theme.css`: tło, tekst, złoto, turkus, koral, papier pod flagą, cień, promień rogów, fonty i odstępy. Nazwy zmiennych są używane w `css/app.css`. Nie trzeba szukać kolorów po całym arkuszu.
+Wszystko, co składa się na motyw interfejsu, jest w `css/theme.css`: tło, tekst, złoto, turkus, koral, papier pod flagą, cień, promień rogów, fonty i odstępy. Nazwy zmiennych są używane w `css/app.css`. Nie trzeba szukać kolorów po całym arkuszu. Kosmiczne tło (gwiazdy, planety, smuga) czyta kolory `--sky-*` z tego samego pliku. Przy `prefers-reduced-motion` zostaje nieruchomy obraz.
 
 Czcionki (Outfit i Fraunces, licencja SIL OFL) leżą w `assets/fonts/`. Podmiana plików i wpisów w `css/fonts.css` zmienia krój pisma. Polskie znaki są w plikach `latin-ext`.
 

@@ -1,4 +1,4 @@
-import { numericOptions, randInt } from "../util.js";
+import { numericOptions, randInt, recallWeight, weightedPick } from "../util.js";
 
 const OPS = {
   dodawanie: { sign: "+", title: "Dodawanie" },
@@ -71,6 +71,18 @@ function pair(band, kind) {
   return [divisor * quotient, divisor, quotient, quotient + (band >= 3 ? 20 : 8)];
 }
 
+function chooseKind(kinds, memory) {
+  return weightedPick(kinds, (kind) => recallWeight(memory?.[`math:${kind}`]));
+}
+
+export function makeAddSubQuestion(level, used, memory) {
+  return makeMathQuestion(chooseKind(["dodawanie", "odejmowanie"], memory), level, used);
+}
+
+export function makeMathMixQuestion(level, used, memory) {
+  return makeMathQuestion(chooseKind(["dodawanie", "odejmowanie", "mnozenie", "dzielenie"], memory), level, used);
+}
+
 export function makeMathQuestion(kind, level, used) {
   const op = OPS[kind];
   let built = null;
@@ -122,8 +134,20 @@ export function mathLevels(kind) {
       "Wynik bez reszty, liczby do 12 · 8 pytań · 4 odpowiedzi",
       "Większe dzielenia bez reszty · 10 pytań · 30 s",
     ],
+    "dodawanie-odejmowanie": [
+      "Plus i minus do 10 · 8 pytań",
+      "Plus i minus do 20 · 8 pytań",
+      "Plus i minus do 100 · 8 pytań",
+      "Plus i minus do 1000 · 10 pytań · 25 s",
+    ],
+    mix: [
+      "Wszystkie działania, małe liczby · 8 pytań",
+      "Wszystkie działania do 20 i tabliczka do 10 · 8 pytań",
+      "Większe liczby i tabliczka do 12 · 8 pytań",
+      "Mieszanka trudniejszych działań · 10 pytań · 30 s",
+    ],
   };
-  const seconds = kind === "mnozenie" || kind === "dzielenie" ? 30 : 25;
+  const seconds = kind === "mnozenie" || kind === "dzielenie" || kind === "mix" ? 30 : 25;
   const text = details[kind];
   return [
     { id: "latwy", title: "Łatwy", band: 1, questions: 8, options: 3, seconds: 0, detail: text[0] },

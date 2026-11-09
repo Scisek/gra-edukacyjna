@@ -21,6 +21,7 @@ export function parentProfile() {
     misses: {},
     stats: { rounds: 0, correct: 0, answered: 0 },
     rewards: { pieces: {} },
+    memory: {},
   };
 }
 
@@ -47,6 +48,7 @@ function ensure(profile) {
   profile.rewards.pieces = profile.rewards.pieces && typeof profile.rewards.pieces === "object"
     ? profile.rewards.pieces
     : {};
+  profile.memory = profile.memory && typeof profile.memory === "object" ? profile.memory : {};
   if (!AVATARS.some((item) => item.id === profile.avatar)) profile.avatar = AVATARS[0].id;
   return profile;
 }
@@ -158,6 +160,23 @@ export function recordAnswer(profile, correct) {
   if (isTestProfile(profile)) return;
   profile.stats.answered += 1;
   if (correct) profile.stats.correct += 1;
+}
+
+export function recordMemory(profile, key, correct) {
+  if (!key || isTestProfile(profile)) return;
+  profile.memory = profile.memory || {};
+  const stat = profile.memory[key] || { correct: 0, wrong: 0 };
+  if (correct) stat.correct += 1;
+  else stat.wrong += 1;
+  profile.memory[key] = stat;
+}
+
+export function resetMemory(id) {
+  if (id === PARENT_ID) return;
+  const profile = state.profiles.find((item) => item.id === id);
+  if (!profile) return;
+  profile.memory = {};
+  persist();
 }
 
 export function recordMiss(profile, key) {

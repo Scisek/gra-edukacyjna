@@ -11,6 +11,27 @@ export function pick(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
 
+export function recallWeight(stat) {
+  if (!stat) return 1;
+  const wrong = stat.wrong || 0;
+  const correct = stat.correct || 0;
+  if (correct >= 3 && wrong === 0) return 0.3;
+  return 1 + wrong * 3 + Math.max(0, wrong - correct);
+}
+
+export function weightedPick(list, weightOf) {
+  if (!list.length) return null;
+  const weights = list.map((item) => Math.max(0.2, weightOf(item)));
+  let total = 0;
+  for (const weight of weights) total += weight;
+  let roll = Math.random() * total;
+  for (let index = 0; index < list.length; index += 1) {
+    roll -= weights[index];
+    if (roll <= 0) return list[index];
+  }
+  return list[list.length - 1];
+}
+
 export function randInt(min, max) {
   return min + Math.floor(Math.random() * (max - min + 1));
 }

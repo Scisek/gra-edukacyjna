@@ -53,4 +53,13 @@
   --tap: 60px;
   --content: 720px;
   --text: 1.125rem;
+
+  /* Kosmiczne tło (js/sky.js czyta te kolory). */
+  --sky-star: #f7f4ea;
+  --sky-star-soft: #9ed4de;
+  --sky-glow: rgba(90, 140, 170, 0.22);
+  --sky-nebula: rgba(120, 90, 170, 0.28);
+  --sky-planet: #c6a15e;
+  --sky-planet-2: #6aa8b4;
+  --sky-shoot: #fff3c4;
 }
