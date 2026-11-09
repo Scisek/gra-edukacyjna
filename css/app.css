@@ -21,8 +21,8 @@ body {
     radial-gradient(1px 1px at 40% 46%, rgba(255, 255, 255, 0.35), transparent 60%),
     radial-gradient(1.5px 1.5px at 84% 62%, rgba(255, 255, 255, 0.35), transparent 60%),
     radial-gradient(1px 1px at 22% 78%, rgba(255, 255, 255, 0.3), transparent 60%),
-    radial-gradient(520px 280px at 50% -10%, rgba(106, 168, 180, 0.14), transparent 60%),
-    radial-gradient(420px 260px at 100% 0%, rgba(155, 147, 201, 0.12), transparent 55%),
+    radial-gradient(520px 280px at 50% -10%, rgba(0, 240, 255, 0.18), transparent 60%),
+    radial-gradient(420px 260px at 100% 0%, rgba(255, 79, 163, 0.16), transparent 55%),
     var(--bg);
   background-attachment: fixed;
   min-height: 100dvh;
@@ -214,12 +214,13 @@ h1:focus {
 }
 
 .btn-primary {
-  background: linear-gradient(180deg, #7eb8c2, var(--btn));
-  color: var(--btn-ink);
+  background: var(--btn-grad);
+  color: #fff;
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 999px;
   box-shadow: var(--glow);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
 }
 
 .btn-ghost {
@@ -246,7 +247,8 @@ h1:focus {
 
 @media (hover: hover) {
   .btn-primary:hover:not(:disabled) {
-    background: #8ec6cf;
+    filter: brightness(1.08);
+    transform: translateY(-2px);
   }
   .btn-ghost:hover,
   .chip:hover,
@@ -1067,6 +1069,18 @@ p {
   gap: 8px;
 }
 
+.quiz .choices.is-odd .choice:last-child {
+  grid-column: 1 / -1;
+  width: calc((100% - 8px) / 2);
+  max-width: calc((100% - 8px) / 2);
+  justify-self: center;
+}
+
+.quiz .choice:nth-child(4n + 1) { border-color: var(--choice-1); box-shadow: 0 0 16px rgba(0, 240, 255, 0.28); }
+.quiz .choice:nth-child(4n + 2) { border-color: var(--choice-2); box-shadow: 0 0 16px rgba(255, 79, 163, 0.28); }
+.quiz .choice:nth-child(4n + 3) { border-color: var(--choice-3); box-shadow: 0 0 16px rgba(192, 132, 252, 0.28); }
+.quiz .choice:nth-child(4n + 4) { border-color: var(--choice-4); box-shadow: 0 0 16px rgba(255, 230, 0, 0.28); }
+
 .quiz .choice {
   min-height: 58px;
   justify-content: center;
@@ -1194,6 +1208,233 @@ p {
     font-size: 0.75rem;
   }
 }
+
+.tile[data-subject="geografia"] { border-color: color-mix(in srgb, var(--tile-geografia) 70%, transparent); box-shadow: 0 0 22px rgba(0, 240, 255, 0.2); }
+.tile[data-subject="polski"] { border-color: color-mix(in srgb, var(--tile-polski) 70%, transparent); box-shadow: 0 0 22px rgba(255, 79, 163, 0.2); }
+.tile[data-subject="matematyka"] { border-color: color-mix(in srgb, var(--tile-matematyka) 70%, transparent); box-shadow: 0 0 22px rgba(255, 230, 0, 0.18); }
+.tile[data-subject="przyroda"] { border-color: color-mix(in srgb, var(--tile-przyroda) 65%, transparent); }
+.tile[data-subject="historia"] { border-color: color-mix(in srgb, var(--tile-historia) 70%, transparent); }
+
+.tile,
+.module-card,
+.profile-card,
+.level-tile,
+.breed-card,
+.breed-detail {
+  background: var(--surface);
+  border: 2px solid var(--line);
+  backdrop-filter: blur(16px);
+}
+
+.tile__art img {
+  animation: float-soft 4.2s ease-in-out infinite;
+}
+
+@keyframes float-soft {
+  50% { transform: translateY(-4px); }
+}
+
+.xp {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+  max-width: var(--content);
+  margin: 0 auto;
+  padding: 0 12px 8px;
+}
+
+.xp__level,
+.xp__count {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+.xp__track {
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(8, 12, 24, 0.7);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  overflow: hidden;
+}
+
+.xp__fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--teal), var(--pink));
+  box-shadow: var(--glow);
+}
+
+.level-group {
+  margin-bottom: 14px;
+}
+
+.level-group__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.15rem;
+}
+
+.level-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.level-tile {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  min-height: 84px;
+  padding: 6px 4px;
+  color: var(--ink);
+  background: rgba(18, 24, 48, 0.72);
+}
+
+.level-tile.is-locked {
+  opacity: 0.55;
+}
+
+.level-tile__id {
+  font-family: var(--font-display);
+  font-size: 1rem;
+}
+
+.level-tile__detail {
+  font-size: 0.68rem;
+  line-height: 1.2;
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+.level-tile .stars {
+  margin-top: 0;
+}
+
+.level-tile .star {
+  width: 14px;
+  height: 14px;
+}
+
+.kicker-exam {
+  color: var(--pink);
+}
+
+.badge-exam {
+  background: rgba(255, 79, 163, 0.18);
+  color: #ffd0e4;
+}
+
+.breed-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.breed-card {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  padding: 8px;
+  color: var(--ink);
+  text-align: center;
+  font-size: 0.78rem;
+}
+
+.breed-card.is-locked {
+  filter: grayscale(1) brightness(0.45);
+}
+
+.breed-art {
+  width: 100%;
+  aspect-ratio: 6 / 7;
+  object-fit: cover;
+  border-radius: 16px;
+}
+
+.breed-art--lg {
+  width: min(100%, 220px);
+  margin: 0 auto;
+}
+
+.breed-detail {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  margin-bottom: 16px;
+  border-radius: var(--radius);
+}
+
+.breed-detail p {
+  margin: 0;
+}
+
+.pl-map-wrap {
+  margin: 0 auto 8px;
+}
+
+.pl-map {
+  width: min(100%, 340px);
+  height: auto;
+  max-height: 34vh;
+  display: block;
+  margin: 0 auto;
+}
+
+.pl-region {
+  fill: rgba(0, 240, 255, 0.16);
+  stroke: rgba(0, 240, 255, 0.85);
+  stroke-width: 2;
+  cursor: pointer;
+}
+
+.pl-region.is-correct { fill: rgba(0, 255, 153, 0.45); }
+.pl-region.is-wrong { fill: rgba(255, 79, 163, 0.4); }
+
+.pl-label {
+  fill: #f7f8ff;
+  font-size: 13px;
+  font-family: var(--font-display);
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.badge-list {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  margin: 0 0 16px;
+  list-style: none;
+}
+
+.badge-list li {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 230, 0, 0.45);
+  background: rgba(255, 230, 0, 0.08);
+}
+
+.badge-list span {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.tile[data-subject="geografia"],
+.tile[data-subject="geografia-panstwa"],
+.tile[data-subject="geografia-polska"] { border-color: var(--tile-geografia); }
+.tile[data-subject="polski"] { border-color: var(--tile-polski); }
+.tile[data-subject="matematyka"] { border-color: var(--tile-matematyka); }
+.tile[data-subject="przyroda"] { border-color: var(--tile-przyroda); }
+.tile[data-subject="historia"] { border-color: var(--tile-historia); }
 
 @media (prefers-reduced-motion: reduce) {
   *,

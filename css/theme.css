@@ -1,9 +1,8 @@
 /* ============================================================
    Skarby wiedzy — motyw
-   Kolory, czcionki, odstępy, zaokrąglenia i cienie.
+   Kolory, czcionki, odstępy, poświaty i kosmos.
    Wygląd interfejsu zmienia się tutaj.
-   Rysunki (awatary, mapy, ikony) to osobne pliki SVG
-   w katalogu assets/ — patrz README.
+   Rysunki (awatary, rasy, ikony) są w assets/.
    ============================================================ */
 
 :root {
@@ -11,33 +10,35 @@
 
   --bg: #0b0d19;
   --bg-elevated: #121629;
-  --surface: rgba(23, 29, 56, 0.78);
+  --surface: rgba(20, 26, 52, 0.72);
   --surface-solid: #171d38;
-  --surface-2: #1c2444;
-  --ink: #f4f7ff;
-  --ink-soft: #c5d0e6;
-  --ink-faint: #93a0bb;
-  --line: rgba(255, 255, 255, 0.14);
-  /* Przyciski są przygaszone: nadal ciepłe i wyraźne, bez neonu. */
-  --gold: #c6a15e;
-  --gold-deep: #9a7840;
+  --surface-2: #1a203c;
+  --ink: #f7f8ff;
+  --ink-soft: #d5def2;
+  --ink-faint: #a9b6d4;
+  --line: rgba(255, 255, 255, 0.16);
+  --gold: #ffe600;
+  --gold-deep: #c9a400;
   --gold-ink: #1c160e;
-  --teal: #6aa8b4;
-  --teal-deep: #2c5c66;
-  --coral: #d08990;
-  --good: #7dbea4;
-  --lilac: #9b93c9;
+  --teal: #00f0ff;
+  --teal-deep: #0a6f91;
+  --coral: #ff7a9c;
+  --good: #00ff99;
+  --lilac: #c084fc;
+  --pink: #ff4fa3;
   --paper: #f3efe6;
-  --btn: #6aa8b4;
-  --btn-ink: #102026;
+  --btn: #00d4ff;
+  --btn-ink: #04121c;
+  --btn-grad: linear-gradient(100deg, #00f0ff, #3b82f6 55%, #7c3aed);
+  --glow: 0 0 22px rgba(0, 240, 255, 0.45);
+  --glow-pink: 0 0 20px rgba(255, 79, 163, 0.4);
+  --glow-gold: 0 0 18px rgba(255, 230, 0, 0.4);
 
-  --shadow: 0 16px 36px rgba(0, 0, 0, 0.32);
-  --shadow-soft: 0 8px 22px rgba(0, 0, 0, 0.24);
-  --glow: 0 0 18px rgba(106, 168, 180, 0.22);
-
-  --radius: 24px;
-  --radius-sm: 18px;
-  --radius-xs: 14px;
+  --shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+  --shadow-soft: 0 10px 28px rgba(0, 0, 0, 0.28);
+  --radius: 28px;
+  --radius-sm: 20px;
+  --radius-xs: 16px;
 
   --font: "Outfit", "Segoe UI", sans-serif;
   --font-display: "Fredoka", "Outfit", sans-serif;
@@ -50,16 +51,25 @@
   --space-6: 32px;
   --space-7: 48px;
 
-  --tap: 60px;
+  --tap: 56px;
   --content: 720px;
-  --text: 1.125rem;
+  --text: 1.08rem;
 
-  /* Kosmiczne tło (js/sky.js czyta te kolory). */
-  --sky-star: #f7f4ea;
-  --sky-star-soft: #9ed4de;
-  --sky-glow: rgba(90, 140, 170, 0.22);
-  --sky-nebula: rgba(120, 90, 170, 0.28);
-  --sky-planet: #c6a15e;
-  --sky-planet-2: #6aa8b4;
-  --sky-shoot: #fff3c4;
+  --choice-1: #00f0ff;
+  --choice-2: #ff4fa3;
+  --choice-3: #c084fc;
+  --choice-4: #ffe600;
+  --tile-geografia: #00f0ff;
+  --tile-polski: #ff4fa3;
+  --tile-matematyka: #ffe600;
+  --tile-przyroda: #00ff99;
+  --tile-historia: #c084fc;
+
+  --sky-star: #ffffff;
+  --sky-star-soft: #7ef6ff;
+  --sky-glow: rgba(0, 240, 255, 0.28);
+  --sky-nebula: rgba(171, 0, 255, 0.32);
+  --sky-planet: #ffe600;
+  --sky-planet-2: #00f0ff;
+  --sky-shoot: #fff6b0;
 }

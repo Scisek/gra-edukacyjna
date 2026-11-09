@@ -1,4 +1,5 @@
 import { AVATARS } from "./avatars.js";
+import { subjects } from "./registry.js";
 
 const KEY = "skarb-wiedzy-v1";
 
@@ -22,6 +23,10 @@ export function parentProfile() {
     stats: { rounds: 0, correct: 0, answered: 0 },
     rewards: { pieces: {} },
     memory: {},
+    xp: 0,
+    playerLevel: 1,
+    breeds: {},
+    badges: [],
   };
 }
 
@@ -32,6 +37,11 @@ function emptyProgress() {
     misses: {},
     stats: { rounds: 0, correct: 0, answered: 0 },
     rewards: { pieces: {} },
+    xp: 0,
+    playerLevel: 1,
+    breeds: {},
+    badges: [],
+    legacyExam: {},
   };
 }
 
@@ -49,8 +59,109 @@ function ensure(profile) {
     ? profile.rewards.pieces
     : {};
   profile.memory = profile.memory && typeof profile.memory === "object" ? profile.memory : {};
+  profile.breeds = profile.breeds && typeof profile.breeds === "object" ? profile.breeds : {};
+  profile.badges = Array.isArray(profile.badges) ? profile.badges : [];
+  profile.legacyExam = profile.legacyExam && typeof profile.legacyExam === "object" ? profile.legacyExam : {};
+  profile.playerLevel = Number(profile.playerLevel) || 1;
+  profile.xp = Number(profile.xp) || 0;
   if (!AVATARS.some((item) => item.id === profile.avatar)) profile.avatar = AVATARS[0].id;
+  if ((profile.progressVersion || 0) < 2) migrateProgress(profile);
+  if ((profile.progressVersion || 0) < 3) migrateCatalog(profile);
+  if (profile.audience !== "dorosly" && profile.audience !== "dziecko") profile.audience = "dziecko";
   return profile;
+}
+
+function renamePrefix(bag, from, to) {
+  if (!bag || typeof bag !== "object") return;
+  for (const key of Object.keys(bag)) {
+    if (key === from || key.startsWith(`${from}/`)) {
+      const next = `${to}${key.slice(from.length)}`;
+      if (bag[next] == null) bag[next] = bag[key];
+      delete bag[key];
+    }
+  }
+}
+
+function migrateCatalog(profile) {
+  renamePrefix(profile.unlocked, "geografia", "geografia-panstwa");
+  renamePrefix(profile.best, "geografia", "geografia-panstwa");
+  renamePrefix(profile.legacyExam, "geografia", "geografia-panstwa");
+  if (Array.isArray(profile.badges)) {
+    for (const badge of profile.badges) {
+      if (badge.subjectId === "geografia") {
+        badge.subjectId = "geografia-panstwa";
+        badge.id = String(badge.id || "").replace(/^geografia/, "geografia-panstwa");
+      }
+    }
+  }
+  profile.progressVersion = 3;
+}
+
+const OLD_LEVELS = ["latwy", "sredni", "trudny", "mistrz"];
+
+function migrateProgress(profile) {
+  profile.unlocked = profile.unlocked || {};
+  profile.best = profile.best || {};
+  renamePrefix(profile.unlocked, "geografia", "geografia-panstwa");
+  renamePrefix(profile.best, "geografia", "geografia-panstwa");
+  renamePrefix(profile.legacyExam, "geografia", "geografia-panstwa");
+  const pieces = profile.rewards?.pieces || {};
+  for (const value of Object.values(pieces)) profile.xp += (Number(value) || 0) * 150;
+
+  const into = "matematyka/dodawanie-odejmowanie";
+  let mergedUnlock = profile.unlocked[into] ?? 0;
+  for (const id of ["dodawanie", "odejmowanie"]) {
+    const key = `matematyka/${id}`;
+    if (typeof profile.unlocked[key] === "number") mergedUnlock = Math.max(mergedUnlock, profile.unlocked[key]);
+    for (const oldId of OLD_LEVELS) {
+      const best = profile.best[`${key}/${oldId}`];
+      if (!best) continue;
+      const dest = `${into}/${oldId}`;
+      const prev = profile.best[dest];
+      if (!prev || (best.stars || 0) > (prev.stars || 0)) profile.best[dest] = best;
+      delete profile.best[`${key}/${oldId}`];
+    }
+    delete profile.unlocked[key];
+  }
+  if (profile.best && Object.keys(profile.best).some((key) => key.startsWith(`${into}/`)) || typeof profile.unlocked[into] === "number") {
+    profile.unlocked[into] = mergedUnlock;
+  }
+
+  for (const subject of subjects) {
+    for (const module of subject.modules || []) {
+      if (!module.levels) continue;
+      const mkey = `${subject.id}/${module.id}`;
+      const hadOld = OLD_LEVELS.some((oldId) => profile.best[`${mkey}/${oldId}`]) || typeof profile.unlocked[mkey] === "number";
+      const tierOpen = Math.min(4, (typeof profile.unlocked[mkey] === "number" ? profile.unlocked[mkey] : 0) + 1);
+      for (let index = 0; index < OLD_LEVELS.length; index += 1) {
+        const key = `${mkey}/${OLD_LEVELS[index]}`;
+        const best = profile.best[key];
+        if (!best) continue;
+        const first = module.levels.find((level) => level.tier === index + 1);
+        if (first) {
+          const total = first.questions;
+          const ratio = best.total ? best.correct / best.total : 0;
+          profile.best[`${mkey}/${first.id}`] = {
+            correct: Math.round(ratio * total),
+            total,
+            stars: best.stars || 0,
+          };
+        }
+        delete profile.best[key];
+      }
+      if (hadOld || typeof profile.unlocked[mkey] !== "number") {
+        let newIndex = 0;
+        module.levels.forEach((level, index) => {
+          if (level.tier <= tierOpen) newIndex = index;
+        });
+        profile.unlocked[mkey] = newIndex;
+      }
+      if (module.role === "egzamin") {
+        profile.legacyExam[subject.id] = Math.max(profile.legacyExam[subject.id] || 0, tierOpen);
+      }
+    }
+  }
+  migrateCatalog(profile);
 }
 
 function blankState() {
@@ -125,13 +236,15 @@ function uid() {
   return `p-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function createProfile(name, avatar) {
+export function createProfile(name, avatar, audience) {
   sessionTest = false;
   const profile = ensure({
     id: uid(),
     name: cleanName(name),
     avatar,
+    audience: audience === "dorosly" ? "dorosly" : "dziecko",
     createdAt: Date.now(),
+    progressVersion: 3,
     ...emptyProgress(),
   });
   state.profiles.push(profile);

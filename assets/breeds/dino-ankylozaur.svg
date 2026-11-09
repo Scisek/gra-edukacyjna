@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 140">
+  <style>
+    .bob { transform-box: fill-box; transform-origin: center bottom; animation: bob 2.6s ease-in-out infinite; }
+    .wag { transform-box: fill-box; transform-origin: 20% 50%; animation: wag 1.15s ease-in-out infinite; }
+    .blink { transform-box: fill-box; transform-origin: center; animation: blink 4.8s infinite; }
+    @keyframes bob { 50% { transform: translateY(-3px); } }
+    @keyframes wag { 50% { transform: rotate(14deg); } }
+    @keyframes blink { 0%,42%,48%,100% { transform: scaleY(1);} 45% { transform: scaleY(.12);} }
+    @media (prefers-reduced-motion: reduce) { .bob,.wag,.blink { animation: none; } }
+  </style>
+  <rect width="120" height="140" rx="28" fill="#12182e"/>
+  <g class="bob"><path d="M24 96c10-8 18-28 28-28 6 0 8 8 12 8 10 0 20-12 24-6 2 8-10 18-24 22-12 4-28 10-40 4z" fill="#6a7d55"/>
+    <path d="M30 78l5-12 5 10 5-14 5 14 5-10 5 12" fill="none" stroke="#ffe600" stroke-width="3"/>
+    <g class="blink"><circle cx="40" cy="86" r="2.4" fill="#1a2436"/></g>
+    <circle cx="92" cy="108" r="6" fill="#f7f4ea"/></g>
+</svg>

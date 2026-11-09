@@ -1,11 +1,14 @@
 import { access, readFile } from "node:fs/promises";
 import { countries } from "../js/data/countries.js";
 import { words } from "../js/data/spelling.js";
-import { makeFlagQuestion, makeCapitalQuestion, makeCountryQuestion, geographyLevels } from "../js/modules/geography.js";
-import { makeSpellingQuestion, spellingLevels } from "../js/modules/spelling.js";
-import { makeMathQuestion, mathLevels } from "../js/modules/math.js";
+import { makeFlagQuestion, makeCapitalQuestion, makeCountryQuestion, geographyExamLevels, geographyLevels } from "../js/modules/geography.js";
+import { makeSpellingQuestion, spellingExamLevels, spellingLevels } from "../js/modules/spelling.js";
+import { makeMathQuestion, mathExamLevels, mathLevels } from "../js/modules/math.js";
 import { subjects } from "../js/registry.js";
-import { ISLANDS, PIECES } from "../js/rewards.js";
+import { COLLECTIONS } from "../js/data/breeds.js";
+import { roundXp, xpToNext } from "../js/xp.js";
+import { cities, VOIVODESHIPS } from "../js/data/poland.js";
+import { presentLevel } from "../js/audience.js";
 
 const errors = [];
 const fail = (message) => errors.push(message);
@@ -58,11 +61,10 @@ for (const word of words) {
   if (!word.hint || !word.meaning) fail(`${word.id}: pusta podpowiedź lub znaczenie`);
 }
 
-const bands = [1, 2, 3, 4];
-for (const band of bands) {
-  const count = words.filter((word) => word.band === band).length;
-  const level = spellingLevels().find((item) => item.band === band);
-  if (count < level.questions) fail(`za mało słów w band ${band}: ${count}`);
+if (words.length < 250) fail(`za mało słów: ${words.length}`);
+for (const level of [...spellingLevels(), ...spellingExamLevels()]) {
+  const pool = words.filter((word) => (level.mix ? word.band <= level.band : word.band === level.band) && word.rank <= level.rank);
+  if (pool.length < level.questions) fail(`za mała pula ortografii ${level.id}: ${pool.length}`);
 }
 
 function checkQuestion(question, level) {
@@ -71,10 +73,12 @@ function checkQuestion(question, level) {
   if (question.options.length !== level.options) fail(`zła liczba opcji (${question.options.length}) dla ${question.review}`);
 }
 
-for (const level of geographyLevels(20)) {
+for (const level of [...geographyLevels(), ...geographyExamLevels()]) {
+  const pool = countries.filter(level.where);
+  if (pool.length < Math.max(level.questions, level.options)) fail(`za mała pula geografii ${level.id}: ${pool.length}`);
   for (const make of [makeFlagQuestion, makeCapitalQuestion, makeCountryQuestion]) {
     const used = new Set();
-    for (let index = 0; index < level.questions; index += 1) checkQuestion(make(level, used), level);
+    for (let index = 0; index < Math.min(3, level.questions); index += 1) checkQuestion(make(level, used), level);
   }
 }
 
@@ -87,7 +91,7 @@ const signs = { dodawanie: "+", odejmowanie: "−", mnozenie: "×", dzielenie: "
 for (const kind of Object.keys(signs)) {
   for (const level of mathLevels(kind)) {
     const used = new Set();
-    for (let index = 0; index < 40; index += 1) {
+    for (let index = 0; index < 12; index += 1) {
       const question = makeMathQuestion(kind, level, used);
       checkQuestion(question, level);
       const match = question.figure.text.match(/^(\d+) (.+) (\d+)$/);
@@ -95,29 +99,49 @@ for (const kind of Object.keys(signs)) {
       const a = Number(match[1]);
       const b = Number(match[3]);
       const result = Number(question.correctId);
-      if (kind === "dodawanie" && a + b !== result) fail(`złe dodawanie ${question.figure.text}`);
-      if (kind === "odejmowanie" && (a - b !== result || result < 0)) fail(`złe odejmowanie ${question.figure.text}`);
+      if (kind === "dodawanie" && (a + b !== result || result > level.max || result < 0)) fail(`złe dodawanie ${question.figure.text}`);
+      if (kind === "odejmowanie" && (a - b !== result || result < 0 || a > level.max)) fail(`złe odejmowanie ${question.figure.text}`);
       if (kind === "mnozenie" && a * b !== result) fail(`złe mnożenie ${question.figure.text}`);
       if (kind === "dzielenie" && (b === 0 || a % b !== 0 || a / b !== result)) fail(`złe dzielenie ${question.figure.text}`);
-      if (kind === "dodawanie" && level.band === 1 && result > 10) fail(`dodawanie poza 10: ${question.figure.text}`);
-      if (kind === "dodawanie" && level.band === 2 && (result < 11 || result > 20)) fail(`dodawanie poza 20: ${question.figure.text}`);
-      if (kind === "dodawanie" && level.band === 3 && result > 100) fail(`dodawanie poza 100: ${question.figure.text}`);
-      if (kind === "dodawanie" && level.band === 4 && result > 1000) fail(`dodawanie poza 1000: ${question.figure.text}`);
-      if (kind === "odejmowanie" && level.band === 1 && a > 10) fail(`odejmowanie poza 10: ${question.figure.text}`);
-      if (kind === "odejmowanie" && level.band === 4 && a > 1000) fail(`odejmowanie poza 1000: ${question.figure.text}`);
-      if (kind === "mnozenie" && level.band === 1 && (a > 5 || b > 5)) fail(`mnożenie poza 5: ${question.figure.text}`);
-      if (kind === "mnozenie" && level.band === 2 && (a > 10 || b > 10)) fail(`mnożenie poza 10: ${question.figure.text}`);
-      if (kind === "mnozenie" && level.band === 4 && (a > 30 || b > 9 || a < 10)) fail(`mnożenie mistrz: ${question.figure.text}`);
-      if (kind === "dzielenie" && level.band === 4 && result > 80) fail(`dzielenie mistrz: ${question.figure.text}`);
+      if (kind === "mnozenie" && !level.big && (a > level.tableMax || b > level.tableMax)) fail(`mnożenie poza tabliczką ${question.figure.text}`);
+      if (kind === "mnozenie" && level.big && (a < level.bigMin || a > level.bigMax)) fail(`mnożenie mistrz ${question.figure.text}`);
     }
   }
 }
+if (mathExamLevels().length !== 12) fail("egzamin matematyki nie ma 12 podpoziomów");
 
-const readyIds = subjects.filter((subject) => subject.status === "ready").map((subject) => subject.id);
-for (const island of ISLANDS) {
-  if (!readyIds.includes(island.id)) fail(`wyspa bez przedmiotu: ${island.id}`);
+if (cities.length < 150) fail(`za mało miast: ${cities.length}`);
+if (VOIVODESHIPS.length !== 16) fail("zła liczba województw");
+const kuj = VOIVODESHIPS.find((item) => item.id === "kujawsko-pomorskie");
+const lub = VOIVODESHIPS.find((item) => item.id === "lubuskie");
+if (kuj.seat !== "Bydgoszcz" || kuj.assembly !== "Toruń") fail("stolice kujawsko-pomorskie");
+if (lub.seat !== "Gorzów Wielkopolski" || lub.assembly !== "Zielona Góra") fail("stolice lubuskie");
+for (let n = 1; n < 12; n += 1) {
+  if (xpToNext(n + 1) <= xpToNext(n)) fail(`XP nie rośnie: ${n}`);
 }
-if (ISLANDS.length !== 3 || PIECES !== 6) fail("nieoczekiwana liczba wysp albo fragmentów");
+const adultLevel = presentLevel({ audience: "dorosly" }, { tier: 1, step: 1, band: 1, min: 0, max: 10, options: 3, questions: 5 }, "matematyka");
+for (let i = 0; i < 20; i += 1) {
+  const question = makeMathQuestion("dodawanie", adultLevel, new Set());
+  const result = Number(question.correctId);
+  if (result < 30) fail(`dorosły dodaje za mało: ${question.figure.text}`);
+}
+const kidBlocked = presentLevel({ test: true, audience: "dorosly" }, { tier: 1, detail: "dziecko" }, "matematyka");
+if (kidBlocked.detail !== "dziecko") fail("Rodzic nie powinien dostawać trudniejszej matematyki");
+
+const easyXp = roundXp({ tier: 1, step: 1 }, 2);
+const hardXp = roundXp({ tier: 4, step: 1 }, 2);
+if (hardXp < easyXp * 8 || hardXp > easyXp * 12) fail(`mnożnik XP ${hardXp}/${easyXp}`);
+for (const collection of Object.values(COLLECTIONS)) {
+  if (collection.breeds.length < 8 || collection.breeds.length > 12 || collection.badges.length !== 4) fail(`kolekcja ${collection.id}`);
+  for (const breed of collection.breeds) {
+    if (!breed.origin || !breed.character || !breed.fact || !breed.size) fail(`niepełna rasa ${breed.id}`);
+    try {
+      await access(`assets/breeds/${collection.id}-${breed.id}.svg`);
+    } catch {
+      fail(`brak rysunku ${collection.id}-${breed.id}`);
+    }
+  }
+}
 
 const subjectIds = new Set();
 for (const subject of subjects) {

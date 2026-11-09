@@ -26,7 +26,9 @@ const ch = ["ch", "h"];
 const aom = ["ą", "om"];
 const een = ["ę", "en"];
 
-export const words = [
+import { extraWords } from "./spelling-more.js";
+
+const core = [
   g("gora", "góra", "ó", ou, "wysokie wzniesienie", 1, "Piszemy ó: góra."),
   g("krol", "król", "ó", ou, "władca kraju", 1, "Król piszemy przez ó."),
   g("roza", "róża", "ó", ou, "kwiat o kolcach", 1, "Róża piszemy przez ó."),
@@ -164,6 +166,19 @@ export const words = [
   g("sen", "sen", "en", een, "odpoczynek w nocy z zamkniętymi oczami", 4, "Sen piszemy przez en."),
   g("ten", "ten", "en", een, "wskazuje na coś bliskiego, nie tamten", 4, "Ten piszemy przez en."),
 ];
+
+export const words = core.concat(extraWords);
+
+const groups = new Map();
+for (const word of words) {
+  if (!groups.has(word.band)) groups.set(word.band, []);
+  groups.get(word.band).push(word);
+}
+for (const group of groups.values()) {
+  group.forEach((word, index) => {
+    word.rank = Math.min(4, Math.floor((index * 4) / group.length) + 1);
+  });
+}
 
 export function wordById(id) {
   return words.find((word) => word.id === id) || null;

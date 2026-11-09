@@ -1,13 +1,15 @@
 /* Rejestr przedmiotów i modułów.
-   Nowy quiz: dopisz obiekt do modules[] albo nowy przedmiot do subjects.
+   Nowy moduł: dodaj plik w js/modules/ (pytania) i js/data/ (dane), potem jedną linijkę importu tutaj.
+   Przedmiot „Geografia – państwa” ma id geografia-panstwa. Stare zapisy z id „geografia” są przenoszone przy wczytaniu.
    Moduł gry potrzebuje id, title, blurb, levels i makeQuestion(level, used).
    Poziom: id, title, band, questions, options, seconds, detail.
    makeQuestion zwraca { key, prompt, figure, options, correctId, correctLabel, note, review }.
    figure: { type: "image", src, alt } | { type: "title"|"equation"|"meaning", text }. */
 
-import { makeCapitalQuestion, makeCountryQuestion, makeFlagQuestion, makeGeoMixQuestion, geographyLevels } from "./modules/geography.js";
-import { makeSpellingMixQuestion, makeSpellingQuestion, spellingLevels, spellingMixLevels } from "./modules/spelling.js";
-import { makeAddSubQuestion, makeMathMixQuestion, makeMathQuestion, mathLevels } from "./modules/math.js";
+import { makeCapitalQuestion, makeCountryQuestion, makeFlagQuestion, makeGeoMixQuestion, geographyExamLevels, geographyLevels } from "./modules/geography.js";
+import { makeSpellingMixQuestion, makeSpellingQuestion, spellingExamLevels, spellingLevels } from "./modules/spelling.js";
+import { makeAddSubQuestion, makeMathMixQuestion, makeMathQuestion, mathExamLevels, mathLevels } from "./modules/math.js";
+import { makePolandCapitalQuestion, makePolandCityQuestion, makePolandMixQuestion, makePolandVoiQuestion, polandCapitalLevels, polandCityLevels, polandExamLevels, polandVoiLevels } from "./modules/poland.js";
 
 function mathModule(id, title, blurb) {
   return {
@@ -15,6 +17,7 @@ function mathModule(id, title, blurb) {
     title,
     blurb,
     status: "ready",
+    role: "nauka",
     levels: mathLevels(id),
     makeQuestion: (level, used) => makeMathQuestion(id, level, used),
   };
@@ -22,9 +25,9 @@ function mathModule(id, title, blurb) {
 
 export const subjects = [
   {
-    id: "geografia",
-    title: "Geografia",
-    blurb: "Flagi, kraje i stolice",
+    id: "geografia-panstwa",
+    title: "Geografia – państwa",
+    blurb: "Flagi, kraje i stolice świata",
     art: "assets/art/przedmiot-geografia.svg",
     status: "ready",
     modules: [
@@ -33,7 +36,8 @@ export const subjects = [
         title: "Flagi",
         blurb: "Rozpoznaj kraj po fladze",
         status: "ready",
-        levels: geographyLevels(20),
+        role: "nauka",
+        levels: geographyLevels(),
         makeQuestion: makeFlagQuestion,
       },
       {
@@ -41,7 +45,8 @@ export const subjects = [
         title: "Stolice",
         blurb: "Wskaż stolicę kraju",
         status: "ready",
-        levels: geographyLevels(20),
+        role: "nauka",
+        levels: geographyLevels(),
         makeQuestion: makeCapitalQuestion,
       },
       {
@@ -49,16 +54,63 @@ export const subjects = [
         title: "Państwa",
         blurb: "Wskaż kraj po stolicy",
         status: "ready",
-        levels: geographyLevels(20),
+        role: "nauka",
+        levels: geographyLevels(),
         makeQuestion: makeCountryQuestion,
       },
       {
         id: "mix",
         title: "Mix",
-        blurb: "Flaga, stolica albo kraj — jak wypadnie",
+        blurb: "Egzamin: flaga, stolica albo kraj",
         status: "ready",
-        levels: geographyLevels(20),
+        role: "egzamin",
+        levels: geographyExamLevels(),
         makeQuestion: makeGeoMixQuestion,
+      },
+    ],
+  },
+  {
+    id: "geografia-polska",
+    title: "Geografia – Polska",
+    blurb: "Miasta i województwa",
+    art: "assets/art/przedmiot-geografia.svg",
+    status: "ready",
+    modules: [
+      {
+        id: "wojewodztwa",
+        title: "Województwa",
+        blurb: "W którym województwie leży miasto",
+        status: "ready",
+        role: "nauka",
+        levels: polandVoiLevels(),
+        makeQuestion: makePolandVoiQuestion,
+      },
+      {
+        id: "stolice",
+        title: "Stolice",
+        blurb: "Stolice województw, także te podwójne",
+        status: "ready",
+        role: "nauka",
+        levels: polandCapitalLevels(),
+        makeQuestion: makePolandCapitalQuestion,
+      },
+      {
+        id: "miasta",
+        title: "Miasta",
+        blurb: "Które miasto i w której stronie województwa",
+        status: "ready",
+        role: "nauka",
+        levels: polandCityLevels(),
+        makeQuestion: makePolandCityQuestion,
+      },
+      {
+        id: "mix",
+        title: "Mix",
+        blurb: "Egzamin z miast i województw",
+        status: "ready",
+        role: "egzamin",
+        levels: polandExamLevels(),
+        makeQuestion: makePolandMixQuestion,
       },
     ],
   },
@@ -72,17 +124,19 @@ export const subjects = [
       {
         id: "ortografia",
         title: "Ortografia",
-        blurb: "Uzupełnij lukę: ó/u, rz/ż, ch/h, ą/om, ę/en",
+        blurb: "Nauka luk: ó/u, rz/ż, ch/h, ą/om, ę/en",
         status: "ready",
+        role: "nauka",
         levels: spellingLevels(),
         makeQuestion: makeSpellingQuestion,
       },
       {
         id: "mix",
         title: "Mix",
-        blurb: "Wszystkie zasady ortografii po trochu",
+        blurb: "Egzamin ze wszystkich zasad",
         status: "ready",
-        levels: spellingMixLevels(),
+        role: "egzamin",
+        levels: spellingExamLevels(),
         makeQuestion: makeSpellingMixQuestion,
       },
       {
@@ -103,8 +157,9 @@ export const subjects = [
       {
         id: "dodawanie-odejmowanie",
         title: "Dodawanie i odejmowanie",
-        blurb: "Plus i minus, bez wyniku mniejszego od zera",
+        blurb: "Nauka plusa i minusa, bez wyniku mniejszego od zera",
         status: "ready",
+        role: "nauka",
         levels: mathLevels("dodawanie-odejmowanie"),
         makeQuestion: makeAddSubQuestion,
       },
@@ -113,9 +168,10 @@ export const subjects = [
       {
         id: "mix",
         title: "Mix",
-        blurb: "Dodawanie, odejmowanie, mnożenie i dzielenie",
+        blurb: "Egzamin ze wszystkich działań",
         status: "ready",
-        levels: mathLevels("mix"),
+        role: "egzamin",
+        levels: mathExamLevels(),
         makeQuestion: makeMathMixQuestion,
       },
     ],

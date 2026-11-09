@@ -1,5 +1,5 @@
 import { el, plural } from "./dom.js";
-import { avatarById, AVATARS } from "./avatars.js";
+import { AVATARS } from "./avatars.js";
 import {
   app,
   closeModal,
@@ -8,6 +8,7 @@ import {
   openModal,
   pickAnswer,
   startRound,
+  startTraining,
   switchTo,
   useHint,
 } from "./actions.js";
@@ -26,17 +27,14 @@ import {
   totalStars,
 } from "./storage.js";
 import { findModule, findSubject, subjects } from "./registry.js";
-import { resultHeadline, unlockedIndex } from "./progress.js";
-import {
-  allIslandsComplete,
-  FINAL_TREASURE,
-  ISLANDS,
-  mapTotal,
-  PIECES,
-  piecesOf,
-} from "./rewards.js";
+import { isAdult, presentLevel } from "./audience.js";
+import { canPlayLevel, examTierOpen, resultHeadline, trainingOpen, unlockedIndex } from "./progress.js";
+import { avatarById, collectionForAvatar } from "./avatars.js";
+import { artFor, collectionById } from "./data/breeds.js";
+import { badgesOf, earnedBreeds, playerLevelOf, xpInto, xpToNext } from "./xp.js";
 import { topMisses } from "./review.js";
 import { countryById } from "./data/countries.js";
+import { VOIVODESHIPS } from "./data/poland.js";
 import { areaText, peopleText, sizeText } from "./geo-info.js";
 
 function avatarImg(id, className) {
@@ -68,6 +66,20 @@ function brandButton() {
   ]);
 }
 
+function xpBar(profile) {
+  const level = playerLevelOf(profile);
+  const into = xpInto(profile);
+  const need = xpToNext(level);
+  const pct = Math.max(0, Math.min(100, Math.round((into / need) * 100)));
+  return el("div", { class: "xp" }, [
+    el("span", { class: "xp__level", text: `Poziom gracza ${level}` }),
+    el("span", { class: "xp__track", "aria-hidden": "true" }, [
+      el("span", { class: "xp__fill", style: `width:${pct}%` }),
+    ]),
+    el("span", { class: "xp__count", text: `${into}/${need} XP` }),
+  ]);
+}
+
 function goBack() {
   const route = app.route;
   const round = app.round;
@@ -79,7 +91,7 @@ function goBack() {
     return;
   }
   if (route.name === "levels") go("subject", { subjectId: route.subjectId });
-  else if (route.name === "subject" || route.name === "maps") go("home");
+  else if (route.name === "subject" || route.name === "collection") go("home");
   else if (route.name === "stats" || route.name === "create") go("profiles");
   else go("home");
 }
@@ -115,8 +127,11 @@ function switcher() {
 }
 
 function header() {
+  const profile = activeProfile();
+  const showXp = profile && app.route.name !== "quiz" && app.route.name !== "profiles" && app.route.name !== "create";
   return el("header", { class: "topbar" }, [
     el("div", { class: "topbar__inner" }, [brandButton(), switcher()]),
+    showXp ? xpBar(profile) : null,
   ]);
 }
 
@@ -153,8 +168,8 @@ function parentCard() {
 function profileCards() {
   return el("div", { class: "profile-grid" }, profiles().map((profile) => {
     const current = profile.id === activeProfile()?.id;
-    const pieces = mapTotal(profile);
-    const maxPieces = ISLANDS.length * PIECES;
+    const collection = collectionById(collectionForAvatar(profile.avatar));
+    const have = earnedBreeds(profile, collection.id).length;
     return el("article", { class: current ? "profile-card is-current" : "profile-card" }, [
       el("button", {
         type: "button",
@@ -164,7 +179,7 @@ function profileCards() {
         avatarImg(profile.avatar, "avatar avatar-lg"),
         el("span", { class: "profile-card__name", text: profile.name }),
         el("span", { class: "profile-card__meta", text: current ? "Teraz gra" : "Kliknij, aby grać" }),
-        el("span", { class: "profile-card__meta", text: `★ ${totalStars(profile)} · mapa ${pieces}/${maxPieces}` }),
+        el("span", { class: "profile-card__meta", text: `Poziom ${playerLevelOf(profile)} · ${collection.title} ${have}/${collection.breeds.length}` }),
       ]),
       el("button", {
         type: "button",
@@ -180,7 +195,7 @@ function viewProfiles() {
   return screen([
     el("p", { class: "kicker", text: "Jedno urządzenie, kilka osób" }),
     el("h1", { text: hasPlayers ? "Kto dzisiaj gra?" : "Załóż profil gracza" }),
-    el("p", { class: "lede", text: "Każde dziecko ma własne gwiazdki, poziomy i mapę skarbów. Wyniki zostają w tej przeglądarce. Profil Rodzic tylko podgląda grę." }),
+    el("p", { class: "lede", text: "Każde dziecko ma własne gwiazdki, poziomy i kolekcję ras. Wyniki zostają w tej przeglądarce. Profil Rodzic tylko podgląda grę." }),
     hasPlayers ? profileCards() : el("img", { class: "hero-art", src: "assets/art/wyprawa.svg", alt: "" }),
     parentCard(),
     el("button", {
@@ -188,7 +203,7 @@ function viewProfiles() {
       class: "btn btn-primary btn-block",
       onClick: () => {
       app.formError = "";
-      app.draft = { name: "", avatar: "" };
+      app.draft = { name: "", avatar: "", audience: "dziecko" };
       go("create");
     },
     }, "Nowy gracz"),
@@ -196,14 +211,15 @@ function viewProfiles() {
 }
 
 function viewCreate() {
-  const draft = app.draft || { name: "", avatar: "" };
+  const draft = app.draft || { name: "", avatar: "", audience: "dziecko" };
   const form = el("form", {
     class: "stack",
     onSubmit: (event) => {
       event.preventDefault();
       const input = form.querySelector("input");
       const selected = form.querySelector(".avatar-pick.is-selected");
-      app.draft = { name: input.value, avatar: selected?.dataset.avatar || "" };
+      const audience = form.querySelector(".audience-pick.is-selected")?.dataset.audience || "dziecko";
+      app.draft = { name: input.value, avatar: selected?.dataset.avatar || "", audience };
       const error = nameError(input.value);
       if (error || !selected) {
         app.formError = error || "Wybierz obrazek.";
@@ -211,8 +227,8 @@ function viewCreate() {
         return;
       }
       app.formError = "";
-      app.draft = { name: "", avatar: "" };
-      createProfile(cleanName(input.value), selected.dataset.avatar);
+      app.draft = { name: "", avatar: "", audience: "dziecko" };
+      createProfile(cleanName(input.value), selected.dataset.avatar, audience);
       go("home");
     },
   }, [
@@ -229,6 +245,22 @@ function viewCreate() {
       }),
     ]),
     app.formError ? el("p", { class: "form-error", role: "alert", tabindex: "-1", "data-focus": "true", text: app.formError }) : null,
+    el("p", { class: "field-label", text: "Kto gra?" }),
+    el("div", { class: "row" }, ["dziecko", "dorosly"].map((id) => el("button", {
+      type: "button",
+      class: (draft.audience || "dziecko") === id ? "btn btn-primary audience-pick is-selected" : "btn btn-ghost audience-pick",
+      "data-audience": id,
+      onClick: (event) => {
+        form.querySelectorAll(".audience-pick").forEach((button) => {
+          button.classList.remove("is-selected", "btn-primary");
+          button.classList.add("btn-ghost");
+        });
+        event.currentTarget.classList.add("is-selected", "btn-primary");
+        event.currentTarget.classList.remove("btn-ghost");
+        app.draft = { ...app.draft, audience: id, name: form.querySelector("input").value };
+      },
+    }, id === "dziecko" ? "Dziecko" : "Dorosły"))),
+    el("p", { class: "hint", text: "Dorosły zaczyna od trudniejszych pytań. Obrazek wybiera kolekcję nagród." }),
     el("p", { class: "field-label", text: "Wybierz obrazek" }),
     el("div", { class: "avatar-grid" }, AVATARS.map((avatar) => el("button", {
       type: "button",
@@ -247,6 +279,7 @@ function viewCreate() {
     }, [
       el("img", { src: avatar.src, alt: "" }),
       el("span", { text: avatar.label }),
+      el("small", { text: `Zbiera: ${avatar.collects}` }),
     ]))),
     el("button", { type: "submit", class: "btn btn-primary btn-block" }, "Zaczynamy"),
   ]);
@@ -269,9 +302,9 @@ function viewHome() {
     storageNote(),
     el("p", { class: "kicker", text: "Wybierz, czego dziś się uczysz" }),
     el("h1", { text: `Witaj, ${profile.name}` }),
+    isAdult(profile) ? el("p", { class: "hint", text: "Tryb dorosły: od razu trudniejsze pytania." }) : null,
     el("div", { class: "subject-grid" }, subjects.map((subject) => {
       const soon = subject.status === "soon";
-      const pieces = piecesOf(profile, subject.id);
       const modules = (subject.modules || []).filter((module) => module.status !== "soon").length;
       const body = [
         el("span", { class: "tile__art" }, [el("img", { src: subject.art, alt: "" })]),
@@ -280,21 +313,22 @@ function viewHome() {
           el("span", { class: "tile__blurb", text: subject.blurb }),
           soon
             ? el("span", { class: "badge", text: "wkrótce" })
-            : el("span", { class: "tile__meta", text: `${modules} ${plural(modules, "moduł", "moduły", "modułów")} · mapa ${pieces}/${PIECES}` }),
+            : el("span", { class: "tile__meta", text: `${modules} ${plural(modules, "moduł", "moduły", "modułów")}` }),
         ]),
       ];
-      if (soon) return el("div", { class: "tile is-soon", "aria-disabled": "true" }, body);
+      if (soon) return el("div", { class: "tile is-soon", "aria-disabled": "true", "data-subject": subject.id }, body);
       return el("button", {
         type: "button",
         class: "tile",
+        "data-subject": subject.id,
         onClick: () => go("subject", { subjectId: subject.id }),
       }, body);
     })),
     el("button", {
       type: "button",
-      class: "btn btn-ghost btn-block map-link",
-      onClick: () => go("maps"),
-    }, `Mapy i skarby · ${mapTotal(profile)}/${ISLANDS.length * PIECES}`),
+      class: "btn btn-primary btn-block map-link",
+      onClick: () => go("collection"),
+    }, "Kolekcja ras"),
   ]);
 }
 
@@ -322,7 +356,8 @@ function viewSubject() {
       }, [
         el("h2", { text: module.title }),
         el("p", { text: module.blurb }),
-        el("span", { class: "tile__meta", text: `Otwarte poziomy: ${open} z ${module.levels.length}` }),
+        el("span", { class: module.role === "egzamin" ? "badge badge-exam" : "badge", text: module.role === "egzamin" ? "Egzamin" : "Nauka" }),
+        el("span", { class: "tile__meta", text: `Otwarte podpoziomy: ${open} z ${module.levels.length}` }),
       ]);
     })),
   ]);
@@ -333,45 +368,110 @@ function viewLevels() {
   const module = findModule(subject, app.route.moduleId);
   const profile = activeProfile();
   if (!subject || !module || module.status === "soon" || !profile) return viewHome();
-  const unlocked = unlockedIndex(profile, subject.id, module.id);
+  const exam = module.role === "egzamin";
+  const groups = [];
+  for (const level of module.levels) {
+    const last = groups[groups.length - 1];
+    if (!last || last.tier !== level.tier) groups.push({ tier: level.tier, title: level.group, levels: [level] });
+    else last.levels.push(level);
+  }
   return screen([
     back(subject.title, () => go("subject", { subjectId: subject.id })),
+    el("p", { class: exam ? "kicker kicker-exam" : "kicker", text: exam ? "Egzamin" : "Nauka" }),
     el("h1", { text: module.title }),
     el("p", { class: "lede", text: module.blurb }),
     el("p", { class: "hint", text: isTestProfile(profile)
-      ? "Tryb testowy: wszystkie poziomy są otwarte, a wynik się nie zapisuje."
-      : "Dwie gwiazdki odblokowują kolejny poziom i dokładają fragment mapy." }),
-    el("div", { class: "level-list" }, module.levels.map((level, index) => {
-      const locked = index > unlocked;
-      const testing = isTestProfile(profile);
-      const best = testing ? null : profile.best[`${subject.id}/${module.id}/${level.id}`];
-      const previous = module.levels[index - 1];
-      return el("article", { class: locked ? "level is-locked" : "level" }, [
-        el("div", {}, [
-          el("h2", { text: level.title }),
-          el("p", { text: level.detail }),
-          testing
-            ? el("p", { class: "tile__meta", text: "Bez zapisu" })
-            : best
-              ? el("p", { class: "tile__meta", text: `Najlepiej: ${best.correct}/${best.total}` })
-              : el("p", { class: "tile__meta", text: "Jeszcze bez wyniku" }),
-          testing ? null : best ? stars(best.stars) : stars(0),
-          !locked && best ? el("p", { class: "hint", text: "Możesz grać ten poziom ponownie." }) : null,
-          locked ? el("p", { class: "hint", text: `Zdobyj 2 gwiazdki na poziomie ${previous.title}.` }) : null,
+      ? "Tryb testowy: wszystko jest otwarte, a wynik się nie zapisuje."
+      : exam
+        ? "Egzamin otwiera się po nauce tego poziomu. Dwie gwiazdki na całym poziomie dają odznakę. XP dostajesz tak samo jak w nauce."
+        : "Dwie gwiazdki otwierają kolejny podpoziom. Każda runda dodaje XP. Nowa rasa czeka, gdy pasek się zapełni." }),
+    ...groups.map((group) => {
+      const gate = exam && !examTierOpen(profile, subject, group.tier);
+      return el("section", { class: "level-group" }, [
+        el("h2", { class: "level-group__title" }, [
+          group.title,
+          gate ? el("span", { class: "badge", text: "po nauce" }) : null,
         ]),
-        el("button", {
-          type: "button",
-          class: "btn btn-primary",
-          disabled: locked,
-          onClick: () => startRound(subject.id, module.id, index),
-        }, locked ? "Zablokowany" : best ? "Zagraj ponownie" : "Graj"),
+        el("div", { class: "level-tiles" }, group.levels.map((level) => {
+          const index = module.levels.indexOf(level);
+          const open = canPlayLevel(profile, subject, module, index);
+          const shown = presentLevel(profile, level, subject.id);
+          const best = isTestProfile(profile) ? null : profile.best[`${subject.id}/${module.id}/${level.id}`];
+          return el("button", {
+            type: "button",
+            class: open ? "level-tile" : "level-tile is-locked",
+            disabled: !open,
+            onClick: () => startRound(subject.id, module.id, index),
+          }, [
+            el("span", { class: "level-tile__id", text: level.title }),
+            best ? stars(best.stars) : stars(0),
+            el("span", { class: "level-tile__detail", text: open ? (best ? "Zagraj ponownie" : String(shown.detail || "").split("·")[0]) : "Zablokowany" }),
+          ]);
+        })),
       ]);
-    })),
+    }),
+    trainingOpen(profile, subject, module) ? el("button", {
+      type: "button",
+      class: "btn btn-ghost btn-block",
+      onClick: () => startTraining(subject.id, module.id),
+    }, "Trening · powtórka pomyłek") : el("p", { class: "hint", text: "Trening odblokuje się po pierwszej rundzie ostatniego podpoziomu." }),
   ]);
 }
 
-function figureBlock(figure) {
+const MAP_LABEL = {
+  "zachodniopomorskie": [78, 92],
+  "pomorskie": [186, 78],
+  "warminsko-mazurskie": [276, 82],
+  "podlaskie": [338, 140],
+  "lubuskie": [68, 176],
+  "wielkopolskie": [148, 172],
+  "kujawsko-pomorskie": [208, 156],
+  "mazowieckie": [278, 164],
+  "lubelskie": [338, 214],
+  "dolnoslaskie": [66, 262],
+  "opolskie": [138, 264],
+  "lodzkie": [200, 248],
+  "slaskie": [142, 338],
+  "swietokrzyskie": [202, 322],
+  "malopolskie": [190, 392],
+  "podkarpackie": [286, 360],
+};
+
+function polandMap(figure, question, round) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 390 450");
+  svg.setAttribute("class", "pl-map");
+  svg.setAttribute("role", "group");
+  svg.setAttribute("aria-label", "Mapa województw Polski");
+  for (const voi of VOIVODESHIPS) {
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", voi.d);
+    const picked = round?.picked === voi.id;
+    const correct = round?.locked && question?.correctId === voi.id;
+    const wrong = round?.locked && picked && !correct;
+    path.setAttribute("class", `pl-region${correct ? " is-correct" : ""}${wrong ? " is-wrong" : ""}`);
+    if (figure.tap && !round?.locked) path.addEventListener("click", () => pickAnswer(voi.id));
+    svg.append(path);
+    const at = MAP_LABEL[voi.id];
+    if (at) {
+      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      text.setAttribute("x", String(at[0]));
+      text.setAttribute("y", String(at[1]));
+      text.setAttribute("class", "pl-label");
+      text.textContent = voi.label;
+      svg.append(text);
+    }
+  }
+  return el("div", { class: "pl-map-wrap" }, [
+    el("p", { class: "title-figure", text: figure.text }),
+    svg,
+    figure.tap && !round?.locked ? el("p", { class: "hint", text: "Stuknij właściwe województwo." }) : null,
+  ]);
+}
+
+function figureBlock(figure, question, round) {
   if (!figure) return null;
+  if (figure.type === "pl-map") return polandMap(figure, question, round);
   if (figure.type === "image") {
     return el("div", { class: "flag-frame" }, [
       el("img", { src: figure.src, alt: figure.alt || "" }),
@@ -435,9 +535,9 @@ function viewQuiz() {
       }, "?") : el("span", { class: "hint-mini hint-mini--spacer", "aria-hidden": "true" }),
       el("h1", { class: "prompt", text: question.prompt }),
     ]),
-    figureBlock(question.figure),
+    figureBlock(question.figure, question, round),
     country && hintLevel >= 1 ? el("p", { class: "hint-line", text: `Kontynent: ${country.continent}` }) : null,
-    el("div", { class: odd ? "choices is-odd" : "choices" }, visibleOptions.map((option) => {
+    question.figure?.tap ? null : el("div", { class: odd ? "choices is-odd" : "choices" }, visibleOptions.map((option) => {
       const correct = round.locked && option.id === question.correctId;
       const wrong = round.locked && round.picked === option.id && option.id !== question.correctId;
       return el("button", {
@@ -473,16 +573,19 @@ function viewResults() {
   const round = app.round;
   const profile = activeProfile();
   if (!round?.result || !profile) return viewHome();
-  const { stars: earned, total, improved, justUnlocked, reward, test } = round.result;
+  const { stars: earned, total, improved, justUnlocked, test, xp, badges } = round.result;
   const subject = findSubject(round.subjectId);
   const module = findModule(subject, round.moduleId);
   const nextIndex = round.levelIndex + 1;
-  const hasNext = nextIndex < module.levels.length && unlockedIndex(profile, subject.id, module.id) >= nextIndex;
-  let rewardText = "Dwie gwiazdki odsłaniają fragment mapy.";
-  if (test) rewardText = "Tryb testowy — ten wynik nie jest zapisywany.";
-  else if (reward.granted && reward.complete) rewardText = `Wyspa odkryta. Skarb: ${ISLANDS.find((island) => island.id === subject.id)?.treasure || "skarb"}.`;
-  else if (reward.granted) rewardText = `Zdobywasz fragment mapy. Masz ${reward.have} z ${PIECES}.`;
-  else if (earned >= 2) rewardText = "Ta wyspa jest już odkryta.";
+  const hasNext = !round.level.training && nextIndex < module.levels.length && canPlayLevel(profile, subject, module, nextIndex);
+  const breedLine = (xp?.breeds || []).map((breed) => breed.name).join(", ");
+  const badgeLine = (badges || []).map((badge) => badge.title).join(", ");
+  let rewardText = test
+    ? "Tryb testowy — ten wynik nie jest zapisywany."
+    : `+${xp?.amount || 0} XP. Pasek rośnie tak samo w nauce i w egzaminie.`;
+  if (!test && xp?.leveled && breedLine) rewardText = `Poziom gracza ${xp.level}! Nowa rasa: ${breedLine}.`;
+  else if (!test && xp?.leveled) rewardText = `Poziom gracza ${xp.level}! W tej kolekcji masz już wszystkie rasy.`;
+  if (!test && badgeLine) rewardText = `${rewardText} Odznaka: ${badgeLine}.`;
   return screen([
     el("p", { class: "kicker", text: `${subject.title} · ${module.title} · ${round.level.title}` }),
     el("h1", { text: resultHeadline(earned) }),
@@ -509,7 +612,7 @@ function viewResults() {
         class: "btn btn-ghost btn-block",
         onClick: () => startRound(subject.id, module.id, nextIndex),
       }, `Poziom ${module.levels[nextIndex].title}`) : null,
-      el("button", { type: "button", class: "btn btn-ghost btn-block", onClick: () => go("maps") }, "Mapy i skarby"),
+      el("button", { type: "button", class: "btn btn-ghost btn-block", onClick: () => go("collection") }, "Kolekcja"),
       el("button", {
         type: "button",
         class: "btn btn-quiet btn-block",
@@ -519,57 +622,54 @@ function viewResults() {
   ], "screen--narrow");
 }
 
-function puzzle(src, opened) {
-  const cells = [];
-  for (let index = 0; index < PIECES; index += 1) {
-    const col = index % 3;
-    const row = Math.floor(index / 3);
-    const open = index < opened;
-    const cell = el("div", {
-      class: open ? "puzzle__cell is-open" : "puzzle__cell is-locked",
-      style: `--col:${col};--row:${row}`,
-    });
-    if (open) cell.append(el("img", { src, alt: "" }));
-    else cell.append(el("span", { class: "puzzle__lock", text: String(index + 1) }));
-    cells.push(cell);
-  }
-  return el("div", { class: "puzzle", "aria-hidden": "true" }, [
-    el("img", { class: "puzzle__base", src, alt: "" }),
-    ...cells,
-  ]);
-}
-
-function viewMaps() {
+function viewCollection() {
   const profile = activeProfile();
   if (!profile) return viewProfiles();
-  const done = allIslandsComplete(profile);
+  const collection = collectionById(collectionForAvatar(profile.avatar));
+  const owned = new Set(earnedBreeds(profile, collection.id));
+  const picked = collection.breeds.find((breed) => breed.id === app.breed) || null;
+  const badges = badgesOf(profile).filter((badge) => !isTestProfile(profile) || true);
+  const subjectName = { geografia: "Geografia", polski: "Język polski", matematyka: "Matematyka" };
   return screen([
-    back("Przedmioty", () => go("home")),
-    el("h1", { text: "Mapy i skarby" }),
+    back("Przedmioty", () => {
+      app.breed = null;
+      go("home");
+    }),
+    el("h1", { text: `Kolekcja · ${collection.title}` }),
     el("p", { class: "lede", text: isTestProfile(profile)
-      ? "Podgląd pełnych map. W trybie testowym nic nie dopisujemy do zapisu."
-      : "Za rundę z co najmniej dwiema gwiazdkami odkrywasz jeden fragment wyspy tego przedmiotu." }),
-    el("div", { class: "map-list" }, ISLANDS.map((island) => {
-      const have = piecesOf(profile, island.id);
-      const complete = have >= PIECES;
-      return el("article", { class: "map-card" }, [
-        el("h2", { text: island.title }),
-        el("p", { text: island.text }),
-        puzzle(island.map, have),
-        el("p", { class: "tile__meta", text: complete ? "Wyspa odkryta" : `Fragmenty: ${have} z ${PIECES}` }),
-        complete
-          ? el("figure", { class: "treasure" }, [
-            el("img", { src: island.treasureArt, alt: "" }),
-            el("figcaption", { text: island.treasure }),
-          ])
-          : null,
+      ? "Podgląd całej kolekcji. W trybie testowym nic się nie zapisuje."
+      : "Gdy pasek XP się zapełni, dostajesz kolejną rasę. Odznaki spadają za cały poziom egzaminu Mix." }),
+    el("p", { class: "tile__meta", text: `${owned.size} z ${collection.breeds.length}` }),
+    el("div", { class: "breed-grid" }, collection.breeds.map((breed) => {
+      const open = owned.has(breed.id);
+      return el("button", {
+        type: "button",
+        class: open ? "breed-card" : "breed-card is-locked",
+        onClick: () => {
+          if (!open) return;
+          app.breed = breed.id;
+          go("collection");
+        },
+      }, [
+        el("img", { class: "breed-art", src: artFor(collection.id, breed.id), alt: "" }),
+        el("span", { text: open ? breed.name : "???" }),
       ]);
     })),
-    el("article", { class: done ? "final-card" : "final-card is-locked" }, [
-      el("img", { src: FINAL_TREASURE.art, alt: "" }),
-      el("h2", { text: FINAL_TREASURE.title }),
-      el("p", { text: done ? "Trzy wyspy odkryte. Korona wiedzy jest twoja." : FINAL_TREASURE.text }),
-    ]),
+    picked ? el("article", { class: "breed-detail" }, [
+      el("img", { class: "breed-art breed-art--lg", src: artFor(collection.id, picked.id), alt: "" }),
+      el("h2", { text: picked.name }),
+      el("p", { text: `${collection.labels?.origin || "Pochodzenie"}: ${picked.origin}` }),
+      el("p", { text: `${collection.labels?.size || "Wielkość"}: ${picked.size}` }),
+      el("p", { text: `${collection.labels?.character || "Charakter"}: ${picked.character}` }),
+      el("p", { class: "fact-card__fact", text: picked.fact }),
+    ]) : null,
+    el("h2", { text: "Odznaki" }),
+    badges.length
+      ? el("ul", { class: "badge-list" }, badges.map((badge) => el("li", {}, [
+        el("strong", { text: badge.title }),
+        el("span", { text: `${badge.moduleTitle || subjectName[badge.subjectId] || badge.subjectId} · ${["", "Łatwy", "Średni", "Trudny", "Mistrz"][badge.tier]}` }),
+      ])))
+      : el("p", { class: "hint", text: "Ukończ wszystkie podpoziomy jednego poziomu w Mix, z dwiema gwiazdkami na każdym." }),
   ]);
 }
 
@@ -589,7 +689,7 @@ function viewStats() {
       el("p", {}, [el("strong", { text: String(totalStars(profile)) }), " gwiazdek"]),
       el("p", {}, [el("strong", { text: String(profile.stats.rounds || 0) }), " rund"]),
       el("p", {}, [el("strong", { text: answered ? `${percent}%` : "—" }), " trafień"]),
-      el("p", {}, [el("strong", { text: `${mapTotal(profile)}/${ISLANDS.length * PIECES}` }), " mapy"]),
+      el("p", {}, [el("strong", { text: String(playerLevelOf(profile)) }), " poziom"]),
     ]),
     el("h2", { text: "Warto powtórzyć" }),
     misses.length
@@ -603,7 +703,7 @@ function viewStats() {
       ])))
       : el("p", { class: "hint", text: "Tu pojawią się kraje, słowa i działania, które wracają najczęściej." }),
     el("div", { class: "stack" }, [
-      el("p", { class: "hint", text: "Postępy to gwiazdki, poziomy i mapy. Pamięć odpowiedzi to tylko to, które pytania wracają częściej." }),
+      el("p", { class: "hint", text: "Postępy to gwiazdki, poziomy, XP i kolekcja. Pamięć odpowiedzi to tylko to, które pytania wracają częściej." }),
       el("button", {
         type: "button",
         class: "btn btn-ghost btn-block",
@@ -634,9 +734,9 @@ function modal() {
       ? "Wyczyścić pamięć odpowiedzi?"
       : "Usunąć gracza?";
   const body = kind === "reset"
-    ? `Znikną gwiazdki, poziomy i mapa gracza ${profile.name}. Pamięć pytań zostaje, więc trudniejsze słowa i kraje nadal będą wracać.`
+    ? `Znikną gwiazdki, poziomy, XP i kolekcja gracza ${profile.name}. Pamięć pytań zostaje, więc trudniejsze słowa i kraje nadal będą wracać.`
     : kind === "memory"
-      ? `Gra ${profile.name} znowu pokaże wszystkie pytania tak samo często. Gwiazdki, poziomy i mapa zostają.`
+      ? `Gra ${profile.name} znowu pokaże wszystkie pytania tak samo często. Gwiazdki, poziomy i kolekcja zostają.`
       : `Profil ${profile.name} zniknie z tego urządzenia.`;
   const confirm = kind === "delete" ? "Tak, usuń" : "Tak, wyczyść";
   return el("div", { class: "modal", role: "dialog", "aria-modal": "true", "aria-labelledby": "modal-title" }, [
@@ -672,7 +772,7 @@ export function renderApp() {
   else if (route === "levels") main = viewLevels();
   else if (route === "quiz") main = viewQuiz();
   else if (route === "results") main = viewResults();
-  else if (route === "maps") main = viewMaps();
+  else if (route === "collection") main = viewCollection();
   else if (route === "stats") main = viewStats();
   const shell = el("div", { class: "shell" }, [header(), main]);
   const dialog = modal();
