@@ -1,3 +1,5 @@
+import { isTestProfile } from "./storage.js";
+
 /* Wspólne nagrody profilu.
    PIECES to liczba fragmentów jednej wyspy.
    Siatka w CSS (.puzzle) jest 3 × 2, więc przy zmianie liczby
@@ -39,6 +41,7 @@ export const FINAL_TREASURE = {
 };
 
 export function piecesOf(profile, islandId) {
+  if (isTestProfile(profile)) return PIECES;
   return profile?.rewards?.pieces?.[islandId] ?? 0;
 }
 

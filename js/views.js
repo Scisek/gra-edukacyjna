@@ -15,7 +15,9 @@ import {
   cleanName,
   createProfile,
   deleteProfile,
+  isTestProfile,
   nameError,
+  PARENT_ID,
   profiles,
   resetProfile,
   storageWorks,
@@ -62,37 +64,35 @@ function brandButton() {
   ]);
 }
 
+function playerChip(profile, currentId) {
+  const currentOne = profile.id === currentId;
+  const testing = isTestProfile(profile);
+  return el("button", {
+    type: "button",
+    class: `chip${currentOne ? " is-current" : ""}${testing ? " is-test" : ""}`,
+    "aria-current": currentOne ? "true" : false,
+    onClick: () => {
+      if (currentOne) go("home");
+      else switchTo(profile.id);
+    },
+  }, [
+    avatarImg(profile.avatar, "avatar avatar-sm"),
+    el("span", { text: currentOne ? profile.name : `Graj jako ${profile.name}` }),
+  ]);
+}
+
 function switcher() {
   const current = activeProfile();
   if (!current || app.route.name === "profiles" || app.route.name === "create") return null;
-  const list = profiles();
-  const chips = list.length === 2
-    ? list.map((profile) => {
-      const currentOne = profile.id === current.id;
-      return el("button", {
-        type: "button",
-        class: currentOne ? "chip is-current" : "chip",
-        "aria-current": currentOne ? "true" : false,
-        onClick: () => {
-          if (currentOne) go("home");
-          else switchTo(profile.id);
-        },
-      }, [
-        avatarImg(profile.avatar, "avatar avatar-sm"),
-        el("span", { text: currentOne ? profile.name : `Graj jako ${profile.name}` }),
-      ]);
-    })
-    : [el("button", {
-      type: "button",
-      class: "chip is-current",
-      onClick: () => go("home"),
-    }, [
-      avatarImg(current.avatar, "avatar avatar-sm"),
-      el("span", { text: current.name }),
-    ])];
+  const kids = profiles();
+  const testing = isTestProfile(current);
+  const chips = !testing && kids.length === 2
+    ? kids.map((profile) => playerChip(profile, current.id))
+    : [playerChip(current, current.id)];
 
   return el("div", { class: "switcher" }, [
     ...chips,
+    testing ? el("span", { class: "test-flag", text: "Tryb testowy" }) : null,
     el("button", {
       type: "button",
       class: "btn btn-ghost",
@@ -118,6 +118,23 @@ function back(label, action) {
 function storageNote() {
   if (storageWorks()) return null;
   return el("p", { class: "banner is-bad", role: "status", text: "Nie udało się zapisać postępów w tej przeglądarce." });
+}
+
+function parentCard() {
+  const current = isTestProfile(activeProfile());
+  return el("article", { class: current ? "profile-card is-test is-current" : "profile-card is-test" }, [
+    el("button", {
+      type: "button",
+      class: "profile-card__play",
+      onClick: () => switchTo(PARENT_ID),
+    }, [
+      avatarImg("rodzic", "avatar avatar-lg"),
+      el("span", { class: "badge", text: "Tryb testowy" }),
+      el("span", { class: "profile-card__name", text: "Rodzic" }),
+      el("span", { class: "profile-card__meta", text: current ? "Teraz gra" : "Do sprawdzania całej gry" }),
+      el("span", { class: "profile-card__meta", text: "Wszystko odblokowane · nic się nie zapisuje" }),
+    ]),
+  ]);
 }
 
 function profileCards() {
@@ -150,8 +167,9 @@ function viewProfiles() {
   return screen([
     el("p", { class: "kicker", text: "Jedno urządzenie, kilka osób" }),
     el("h1", { text: hasPlayers ? "Kto dzisiaj gra?" : "Załóż profil gracza" }),
-    el("p", { class: "lede", text: "Każde dziecko ma własne gwiazdki, poziomy i mapę skarbów. Wyniki zostają w tej przeglądarce." }),
+    el("p", { class: "lede", text: "Każde dziecko ma własne gwiazdki, poziomy i mapę skarbów. Wyniki zostają w tej przeglądarce. Profil Rodzic tylko podgląda grę." }),
     hasPlayers ? profileCards() : el("img", { class: "hero-art", src: "assets/art/wyprawa.svg", alt: "" }),
+    parentCard(),
     el("button", {
       type: "button",
       class: "btn btn-primary btn-block",
@@ -307,17 +325,24 @@ function viewLevels() {
     back(subject.title, () => go("subject", { subjectId: subject.id })),
     el("h1", { text: module.title }),
     el("p", { class: "lede", text: module.blurb }),
-    el("p", { class: "hint", text: "Dwie gwiazdki odblokowują kolejny poziom i dokładają fragment mapy." }),
+    el("p", { class: "hint", text: isTestProfile(profile)
+      ? "Tryb testowy: wszystkie poziomy są otwarte, a wynik się nie zapisuje."
+      : "Dwie gwiazdki odblokowują kolejny poziom i dokładają fragment mapy." }),
     el("div", { class: "level-list" }, module.levels.map((level, index) => {
       const locked = index > unlocked;
-      const best = profile.best[`${subject.id}/${module.id}/${level.id}`];
+      const testing = isTestProfile(profile);
+      const best = testing ? null : profile.best[`${subject.id}/${module.id}/${level.id}`];
       const previous = module.levels[index - 1];
       return el("article", { class: locked ? "level is-locked" : "level" }, [
         el("div", {}, [
           el("h2", { text: level.title }),
           el("p", { text: level.detail }),
-          best ? el("p", { class: "tile__meta", text: `Najlepiej: ${best.correct}/${best.total}` }) : el("p", { class: "tile__meta", text: "Jeszcze bez wyniku" }),
-          best ? stars(best.stars) : stars(0),
+          testing
+            ? el("p", { class: "tile__meta", text: "Bez zapisu" })
+            : best
+              ? el("p", { class: "tile__meta", text: `Najlepiej: ${best.correct}/${best.total}` })
+              : el("p", { class: "tile__meta", text: "Jeszcze bez wyniku" }),
+          testing ? null : best ? stars(best.stars) : stars(0),
           locked ? el("p", { class: "hint", text: `Zdobyj 2 gwiazdki na poziomie ${previous.title}.` }) : null,
         ]),
         el("button", {
@@ -401,13 +426,14 @@ function viewResults() {
   const round = app.round;
   const profile = activeProfile();
   if (!round?.result || !profile) return viewHome();
-  const { stars: earned, total, improved, justUnlocked, reward } = round.result;
+  const { stars: earned, total, improved, justUnlocked, reward, test } = round.result;
   const subject = findSubject(round.subjectId);
   const module = findModule(subject, round.moduleId);
   const nextIndex = round.levelIndex + 1;
   const hasNext = nextIndex < module.levels.length && unlockedIndex(profile, subject.id, module.id) >= nextIndex;
   let rewardText = "Dwie gwiazdki odsłaniają fragment mapy.";
-  if (reward.granted && reward.complete) rewardText = `Wyspa odkryta. Skarb: ${ISLANDS.find((island) => island.id === subject.id)?.treasure || "skarb"}.`;
+  if (test) rewardText = "Tryb testowy — ten wynik nie jest zapisywany.";
+  else if (reward.granted && reward.complete) rewardText = `Wyspa odkryta. Skarb: ${ISLANDS.find((island) => island.id === subject.id)?.treasure || "skarb"}.`;
   else if (reward.granted) rewardText = `Zdobywasz fragment mapy. Masz ${reward.have} z ${PIECES}.`;
   else if (earned >= 2) rewardText = "Ta wyspa jest już odkryta.";
   return screen([
@@ -416,8 +442,8 @@ function viewResults() {
     el("div", { class: "result-score" }, [
       stars(earned),
       el("p", { class: "equation equation--result", text: `${round.correct} z ${total}` }),
-      improved ? el("p", { class: "hint", text: "Nowy rekord na tym poziomie." }) : null,
-      justUnlocked ? el("p", { class: "hint", text: `Odblokowano poziom ${module.levels[nextIndex].title}.` }) : null,
+      !test && improved ? el("p", { class: "hint", text: "Nowy rekord na tym poziomie." }) : null,
+      !test && justUnlocked ? el("p", { class: "hint", text: `Odblokowano poziom ${module.levels[nextIndex].title}.` }) : null,
       el("p", { class: "lede", text: rewardText }),
     ]),
     round.review.length ? el("section", { class: "review" }, [
@@ -472,7 +498,9 @@ function viewMaps() {
   return screen([
     back("Przedmioty", () => go("home")),
     el("h1", { text: "Mapy i skarby" }),
-    el("p", { class: "lede", text: "Za rundę z co najmniej dwiema gwiazdkami odkrywasz jeden fragment wyspy tego przedmiotu." }),
+    el("p", { class: "lede", text: isTestProfile(profile)
+      ? "Podgląd pełnych map. W trybie testowym nic nie dopisujemy do zapisu."
+      : "Za rundę z co najmniej dwiema gwiazdkami odkrywasz jeden fragment wyspy tego przedmiotu." }),
     el("div", { class: "map-list" }, ISLANDS.map((island) => {
       const have = piecesOf(profile, island.id);
       const complete = have >= PIECES;
@@ -499,7 +527,7 @@ function viewMaps() {
 
 function viewStats() {
   const profile = profiles().find((item) => item.id === app.route.profileId) || activeProfile();
-  if (!profile) return viewProfiles();
+  if (!profile || isTestProfile(profile)) return viewProfiles();
   const answered = profile.stats.answered || 0;
   const percent = answered ? Math.round((profile.stats.correct / answered) * 100) : 0;
   const misses = topMisses(profile);

@@ -1,6 +1,7 @@
 import { findModule, findSubject } from "./registry.js";
 import {
   activeProfile,
+  isTestProfile,
   persist,
   recordAnswer,
   recordMiss,
@@ -146,12 +147,12 @@ function lockAnswer(selectedId, timedOut) {
   const ok = !timedOut && selectedId === question.correctId;
   if (ok) round.correct += 1;
   round.praise = ok ? praise() : "";
-  recordAnswer(profile, ok);
-  if (!ok) {
-    recordMiss(profile, question.key);
-    round.review.push(question.review);
+  if (!ok) round.review.push(question.review);
+  if (!isTestProfile(profile)) {
+    recordAnswer(profile, ok);
+    if (!ok) recordMiss(profile, question.key);
+    persist();
   }
-  persist();
   redraw();
 }
 
@@ -188,26 +189,32 @@ function conclude() {
   const subject = findSubject(round.subjectId);
   const module = findModule(subject, round.moduleId);
   const level = module.levels[round.levelIndex];
-  const key = progressKey(round.subjectId, round.moduleId, level.id);
-  const prev = profile.best[key];
-  const improved = !prev || stars > prev.stars || (stars === prev.stars && round.correct > prev.correct);
-  if (improved) profile.best[key] = { correct: round.correct, total, stars };
-  const mkey = moduleKey(round.subjectId, round.moduleId);
-  const unlocked = profile.unlocked[mkey] ?? 0;
+  const testing = isTestProfile(profile);
+  let improved = false;
   let justUnlocked = false;
-  if (stars >= 2 && round.levelIndex >= unlocked && round.levelIndex < module.levels.length - 1) {
-    profile.unlocked[mkey] = round.levelIndex + 1;
-    justUnlocked = true;
+  let reward = { granted: false, complete: true, have: PIECES, preview: true };
+  let saved = false;
+  if (!testing) {
+    const key = progressKey(round.subjectId, round.moduleId, level.id);
+    const prev = profile.best[key];
+    improved = !prev || stars > prev.stars || (stars === prev.stars && round.correct > prev.correct);
+    if (improved) profile.best[key] = { correct: round.correct, total, stars };
+    const mkey = moduleKey(round.subjectId, round.moduleId);
+    const unlocked = profile.unlocked[mkey] ?? 0;
+    if (stars >= 2 && round.levelIndex >= unlocked && round.levelIndex < module.levels.length - 1) {
+      profile.unlocked[mkey] = round.levelIndex + 1;
+      justUnlocked = true;
+    }
+    reward = {
+      granted: false,
+      complete: piecesOf(profile, round.subjectId) >= PIECES,
+      have: piecesOf(profile, round.subjectId),
+    };
+    if (stars >= 2) reward = grantPiece(profile, round.subjectId);
+    profile.stats.rounds += 1;
+    saved = persist();
   }
-  let reward = {
-    granted: false,
-    complete: piecesOf(profile, round.subjectId) >= PIECES,
-    have: piecesOf(profile, round.subjectId),
-  };
-  if (stars >= 2) reward = grantPiece(profile, round.subjectId);
-  profile.stats.rounds += 1;
-  const saved = persist();
-  round.result = { stars, total, improved, justUnlocked, reward, saved };
+  round.result = { stars, total, improved, justUnlocked, reward, saved, test: testing };
   go("results");
   if (stars >= 1 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     celebrate(stars);

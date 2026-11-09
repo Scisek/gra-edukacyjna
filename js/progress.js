@@ -1,3 +1,5 @@
+import { isTestProfile } from "./storage.js";
+
 export function starsFor(correct, total) {
   if (!total) return 0;
   const ratio = correct / total;
@@ -16,6 +18,7 @@ export function moduleKey(subjectId, moduleId) {
 }
 
 export function unlockedIndex(profile, subjectId, moduleId) {
+  if (isTestProfile(profile)) return Number.MAX_SAFE_INTEGER;
   return profile?.unlocked?.[moduleKey(subjectId, moduleId)] ?? 0;
 }
 

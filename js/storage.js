@@ -2,6 +2,28 @@ import { AVATARS } from "./avatars.js";
 
 const KEY = "skarb-wiedzy-v1";
 
+export const PARENT_ID = "rodzic";
+
+let sessionTest = false;
+
+export function isTestProfile(profile) {
+  return profile?.test === true;
+}
+
+export function parentProfile() {
+  return {
+    id: PARENT_ID,
+    name: "Rodzic",
+    avatar: "rodzic",
+    test: true,
+    best: {},
+    unlocked: {},
+    misses: {},
+    stats: { rounds: 0, correct: 0, answered: 0 },
+    rewards: { pieces: {} },
+  };
+}
+
 function emptyProgress() {
   return {
     best: {},
@@ -71,10 +93,16 @@ export function profiles() {
 }
 
 export function activeProfile() {
+  if (sessionTest) return parentProfile();
   return state.profiles.find((profile) => profile.id === state.activeId) || null;
 }
 
 export function setActive(id) {
+  if (id === PARENT_ID) {
+    sessionTest = true;
+    return;
+  }
+  sessionTest = false;
   state.activeId = id;
   persist();
 }
@@ -96,6 +124,7 @@ function uid() {
 }
 
 export function createProfile(name, avatar) {
+  sessionTest = false;
   const profile = ensure({
     id: uid(),
     name: cleanName(name),
@@ -110,12 +139,14 @@ export function createProfile(name, avatar) {
 }
 
 export function deleteProfile(id) {
+  if (id === PARENT_ID) return;
   state.profiles = state.profiles.filter((profile) => profile.id !== id);
   if (state.activeId === id) state.activeId = state.profiles[0]?.id ?? null;
   persist();
 }
 
 export function resetProfile(id) {
+  if (id === PARENT_ID) return;
   const profile = state.profiles.find((item) => item.id === id);
   if (!profile) return;
   Object.assign(profile, emptyProgress());
@@ -124,12 +155,13 @@ export function resetProfile(id) {
 }
 
 export function recordAnswer(profile, correct) {
+  if (isTestProfile(profile)) return;
   profile.stats.answered += 1;
   if (correct) profile.stats.correct += 1;
 }
 
 export function recordMiss(profile, key) {
-  if (!key) return;
+  if (!key || isTestProfile(profile)) return;
   profile.misses[key] = (profile.misses[key] || 0) + 1;
 }
 
