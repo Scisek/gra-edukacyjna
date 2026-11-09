@@ -1,0 +1,50 @@
+/* ============================================================
+   Skarby wiedzy — motyw
+   Kolory, czcionki, odstępy, zaokrąglenia i cienie.
+   Wygląd interfejsu zmienia się tutaj.
+   Rysunki (awatary, mapy, ikony) to osobne pliki SVG
+   w katalogu assets/ — patrz README.
+   ============================================================ */
+
+:root {
+  color-scheme: dark;
+
+  --bg: #0c1220;
+  --bg-elevated: #121a2b;
+  --surface: #1a2436;
+  --surface-2: #243044;
+  --ink: #f3efe6;
+  --ink-soft: #c3ccda;
+  --ink-faint: #9aa6b8;
+  --line: rgba(243, 239, 230, 0.14);
+  --gold: #e0b15a;
+  --gold-deep: #b8893a;
+  --gold-ink: #2a2112;
+  --teal: #6ec4b8;
+  --teal-deep: #2f6f68;
+  --coral: #e09a8c;
+  --good: #8ed0b0;
+  --paper: #f4f0e8;
+
+  --shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.22);
+
+  --radius: 22px;
+  --radius-sm: 14px;
+  --radius-xs: 10px;
+
+  --font: "Outfit", "Segoe UI", sans-serif;
+  --font-display: "Fraunces", "Iowan Old Style", "Palatino Linotype", serif;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --tap: 56px;
+  --content: 980px;
+  --text: 1.125rem;
+}
