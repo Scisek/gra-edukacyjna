@@ -10,5 +10,6 @@ export const AVATARS = [
 ];
 
 export function avatarById(id) {
+  if (id === "rodzic") return { id: "rodzic", label: "Rodzic", src: "assets/avatars/rodzic.svg" };
   return AVATARS.find((item) => item.id === id) || AVATARS[0];
 }

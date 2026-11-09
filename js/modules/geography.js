@@ -5,9 +5,17 @@ function poolFor(band) {
   return countries.filter((country) => country.band <= band);
 }
 
-function chooseAnswer(source, used) {
-  const fresh = source.filter((country) => !used.has(country.id));
-  return pick(fresh.length ? fresh : source);
+function chooseAnswer(source, used, levelBand) {
+  let bag = source.filter((country) => !used.has(country.id));
+  if (!bag.length) bag = source;
+  if (levelBand >= 4) {
+    const rare = bag.filter((country) => country.band >= 3);
+    if (rare.length && Math.random() < 0.75) return pick(rare);
+  } else if (levelBand === 3) {
+    const wider = bag.filter((country) => country.band >= 2);
+    if (wider.length && Math.random() < 0.65) return pick(wider);
+  }
+  return pick(bag);
 }
 
 function distractors(source, answer, count, preferLike) {
@@ -22,7 +30,7 @@ function distractors(source, answer, count, preferLike) {
 
 function build(level, used, mode) {
   const source = poolFor(level.band);
-  const answer = chooseAnswer(source, used);
+  const answer = chooseAnswer(source, used, level.band);
   used.add(answer.id);
   const wrongs = distractors(source, answer, level.options - 1, level.band >= 4);
   const asCountry = (country) => ({ id: country.id, label: country.name });
@@ -38,6 +46,7 @@ function build(level, used, mode) {
       correctLabel: answer.name,
       note: answer.note,
       review: `Flaga → ${answer.name}`,
+      countryId: answer.id,
     };
   }
   if (mode === "capital") {
@@ -51,6 +60,7 @@ function build(level, used, mode) {
       correctLabel: answer.capital,
       note: answer.note,
       review: `${answer.name} → ${answer.capital}`,
+      countryId: answer.id,
     };
   }
   const options = shuffle([answer, ...wrongs]).map(asCountry);
@@ -63,6 +73,7 @@ function build(level, used, mode) {
     correctLabel: answer.name,
     note: answer.note,
     review: `${answer.capital} → ${answer.name}`,
+    countryId: answer.id,
   };
 }
 
