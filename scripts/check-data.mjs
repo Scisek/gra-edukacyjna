@@ -6,8 +6,9 @@ import { makeSpellingQuestion, spellingExamLevels, spellingLevels } from "../js/
 import { makeMathQuestion, mathExamLevels, mathLevels } from "../js/modules/math.js";
 import { subjects } from "../js/registry.js";
 import { COLLECTIONS } from "../js/data/breeds.js";
-import { roundXp, xpToNext } from "../js/xp.js";
+import { roundXp, settleXp, xpToNext } from "../js/xp.js";
 import { cities, VOIVODESHIPS } from "../js/data/poland.js";
+import { cityPool } from "../js/modules/poland.js";
 import { presentLevel } from "../js/audience.js";
 
 const errors = [];
@@ -111,6 +112,9 @@ for (const kind of Object.keys(signs)) {
 if (mathExamLevels().length !== 12) fail("egzamin matematyki nie ma 12 podpoziomów");
 
 if (cities.length < 150) fail(`za mało miast: ${cities.length}`);
+const easyCities = cityPool({ tier: 1, step: 1 }).map((city) => city.name).sort();
+const expectedEasy = ["Gdańsk", "Kraków", "Łódź", "Poznań", "Szczecin", "Warszawa", "Wrocław"].sort();
+if (easyCities.join("|") !== expectedEasy.join("|")) fail(`łatwe miasta: ${easyCities.join(", ")}`);
 if (VOIVODESHIPS.length !== 16) fail("zła liczba województw");
 const kuj = VOIVODESHIPS.find((item) => item.id === "kujawsko-pomorskie");
 const lub = VOIVODESHIPS.find((item) => item.id === "lubuskie");
@@ -119,6 +123,9 @@ if (lub.seat !== "Gorzów Wielkopolski" || lub.assembly !== "Zielona Góra") fai
 for (let n = 1; n < 12; n += 1) {
   if (xpToNext(n + 1) <= xpToNext(n)) fail(`XP nie rośnie: ${n}`);
 }
+const over = { playerLevel: 4, xp: 200, avatar: "kot", breeds: { kot: [] } };
+settleXp(over);
+if (over.playerLevel < 5 || over.xp >= xpToNext(over.playerLevel)) fail(`nadmiar XP nie awansuje: poziom ${over.playerLevel}, ${over.xp}`);
 const adultLevel = presentLevel({ audience: "dorosly" }, { tier: 1, step: 1, band: 1, min: 0, max: 10, options: 3, questions: 5 }, "matematyka");
 for (let i = 0; i < 20; i += 1) {
   const question = makeMathQuestion("dodawanie", adultLevel, new Set());
@@ -136,7 +143,7 @@ for (const collection of Object.values(COLLECTIONS)) {
   for (const breed of collection.breeds) {
     if (!breed.origin || !breed.character || !breed.fact || !breed.size) fail(`niepełna rasa ${breed.id}`);
     try {
-      await access(`assets/breeds/${collection.id}-${breed.id}.svg`);
+      await access(`assets/photos/${collection.id}-${breed.id}.webp`);
     } catch {
       fail(`brak rysunku ${collection.id}-${breed.id}`);
     }
