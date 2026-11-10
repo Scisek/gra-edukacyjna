@@ -79,7 +79,7 @@ function xpBar(profile) {
   const level = playerLevelOf(profile);
   const into = xpInto(profile);
   const need = xpToNext(level);
-  const pct = Math.max(0, Math.min(100, Math.round((into / need) * 100)));
+  const pct = need ? Math.max(0, Math.min(100, Math.round((into / need) * 100))) : 0;
   return el("div", { class: "xp" }, [
     el("span", { class: "xp__level", text: `Poziom gracza ${level}` }),
     el("span", { class: "xp__track", "aria-hidden": "true" }, [
