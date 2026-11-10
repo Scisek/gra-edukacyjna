@@ -1219,7 +1219,6 @@ p {
 .module-card,
 .profile-card,
 .level-tile,
-.breed-card,
 .breed-detail {
   background: var(--surface);
   border: 2px solid var(--line);
@@ -1333,34 +1332,143 @@ p {
 
 .breed-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px 6px;
   margin-bottom: 16px;
 }
 
 .breed-card {
   display: grid;
-  gap: 4px;
+  align-content: start;
   justify-items: center;
-  padding: 8px;
+  gap: 2px;
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
   color: var(--ink);
   text-align: center;
-  font-size: 0.78rem;
 }
 
-.breed-card.is-locked {
-  filter: grayscale(1) brightness(0.45);
-}
-
-.breed-art {
+.breed-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
   width: 100%;
-  aspect-ratio: 6 / 7;
-  object-fit: cover;
-  border-radius: 16px;
+  aspect-ratio: 1;
+  overflow: visible;
+  background: none;
+}
+
+.breed-card.is-common .breed-art { filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 12px rgba(0, 240, 255, 0.55)); }
+.breed-card.is-rare .breed-art { filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 12px rgba(192, 132, 252, 0.6)); }
+.breed-card.is-epic .breed-art { filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 12px rgba(255, 79, 163, 0.55)); }
+.breed-card.is-legend .breed-art { filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 14px rgba(255, 230, 0, 0.55)); }
+
+.breed-card.is-locked .breed-art {
+  filter: brightness(0) drop-shadow(0 0 8px rgba(126, 246, 255, 0.5));
+}
+
+.sticker-label {
+  --label: #7ef6ff;
+  --label-shadow: #0a6f91;
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 2px 3px 3px;
+  border-radius: 7px;
+  background: #070b16;
+  color: var(--label);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.5rem;
+  line-height: 1.05;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  text-align: center;
+  transform: rotate(-3deg);
+  text-shadow:
+    -1px -1px 0 #fff,
+    1px -1px 0 #fff,
+    -1px 1px 0 #fff,
+    1px 1px 0 #fff,
+    0 2px 0 var(--label-shadow);
+}
+
+.sticker-label.is-tone-0 { --label: #ffe600; --label-shadow: #b8860b; }
+.sticker-label.is-tone-1 { --label: #39ff8a; --label-shadow: #0d8a45; }
+.sticker-label.is-tone-2 { --label: #ff4fa3; --label-shadow: #b01258; }
+.sticker-label.is-tone-3 { --label: #c084fc; --label-shadow: #6d28d9; }
+.sticker-label.is-tone-4 { --label: #7ef6ff; --label-shadow: #0a6f91; }
+.sticker-label.is-tone-5 { --label: #ff9f43; --label-shadow: #c45c00; }
+
+.sticker-label--lg {
+  width: fit-content;
+  max-width: 100%;
+  margin: 4px auto 8px;
+  padding: 6px 14px 7px;
+  font-size: 1.05rem;
+  line-height: 1.1;
+  border-radius: 12px;
+}
+
+.breed-card.is-reveal .breed-art,
+.reveal-card .breed-art.is-reveal {
+  animation: sticker-reveal 0.7s ease;
+}
+
+@keyframes sticker-reveal {
+  from { transform: scale(0.55) rotate(-8deg); filter: brightness(0); }
+  to { transform: none; filter: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breed-card.is-reveal .breed-art,
+  .reveal-card .breed-art.is-reveal {
+    animation: none;
+  }
+}
+
+.reveal-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 8px 0 0;
+}
+
+.reveal-card {
+  margin: 0;
+  width: 96px;
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+.reveal-card .breed-art {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 12px rgba(0, 240, 255, 0.45));
+}
+
+.credit {
+  margin: 8px 0 0;
+  color: var(--ink-faint);
+  font-size: 0.75rem;
+}
+
+.breed-stage .breed-art {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .breed-art--lg {
-  width: min(100%, 220px);
+  width: min(100%, 240px);
+}
+
+.breed-detail .breed-stage {
+  width: min(100%, 240px);
   margin: 0 auto;
 }
 
@@ -1381,11 +1489,21 @@ p {
 }
 
 .pl-map {
-  width: min(100%, 340px);
+  width: min(100%, 420px);
   height: auto;
-  max-height: 34vh;
+  max-height: 52vh;
   display: block;
   margin: 0 auto;
+  touch-action: manipulation;
+}
+
+.quiz-map .pl-map {
+  max-height: 54vh;
+}
+
+.quiz-map .title-figure {
+  margin: 0 0 4px;
+  text-align: center;
 }
 
 .pl-region {
@@ -1398,12 +1516,21 @@ p {
 .pl-region.is-correct { fill: rgba(0, 255, 153, 0.45); }
 .pl-region.is-wrong { fill: rgba(255, 79, 163, 0.4); }
 
+.pl-dot { stroke: #fff; stroke-width: 2; }
+.pl-dot.is-answer { fill: #ffe600; }
+.pl-dot.is-hit { fill: #00ff99; }
+.pl-dot.is-miss { fill: #ff4fa3; }
+
 .pl-label {
   fill: #f7f8ff;
-  font-size: 13px;
-  font-family: var(--font-display);
+  font-size: 7.5px;
+  font-weight: 600;
+  font-family: var(--font);
   text-anchor: middle;
   pointer-events: none;
+  paint-order: stroke;
+  stroke: rgba(8, 12, 24, 0.72);
+  stroke-width: 2px;
 }
 
 .badge-list {

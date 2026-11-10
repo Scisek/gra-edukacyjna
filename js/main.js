@@ -1,7 +1,10 @@
 import { app, closeModal, focusRoute, go, pickAnswer, setRenderer } from "./actions.js";
 import { activeProfile } from "./storage.js";
+import { settleStoredXp } from "./xp.js";
 import { renderApp } from "./views.js";
 import "./sky.js";
+
+settleStoredXp();
 
 setRenderer(() => {
   const root = document.querySelector("#app");

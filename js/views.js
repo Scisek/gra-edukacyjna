@@ -1,5 +1,4 @@
 import { el, plural } from "./dom.js";
-import { AVATARS } from "./avatars.js";
 import {
   app,
   closeModal,
@@ -7,6 +6,7 @@ import {
   nextQuestion,
   openModal,
   pickAnswer,
+  pickMapPoint,
   startRound,
   startTraining,
   switchTo,
@@ -23,19 +23,27 @@ import {
   profiles,
   resetMemory,
   resetProfile,
+  setAvatar,
   storageWorks,
   totalStars,
 } from "./storage.js";
 import { findModule, findSubject, subjects } from "./registry.js";
 import { isAdult, presentLevel } from "./audience.js";
 import { canPlayLevel, examTierOpen, resultHeadline, trainingOpen, unlockedIndex } from "./progress.js";
-import { avatarById, collectionForAvatar } from "./avatars.js";
-import { artFor, collectionById } from "./data/breeds.js";
+import { AVATARS, avatarById, avatarNeedsChoice, collectionForAvatar } from "./avatars.js";
+import { artFor, collectionById, rarityOf } from "./data/breeds.js";
 import { badgesOf, earnedBreeds, playerLevelOf, xpInto, xpToNext } from "./xp.js";
 import { topMisses } from "./review.js";
 import { countryById } from "./data/countries.js";
 import { VOIVODESHIPS } from "./data/poland.js";
+import { MAP_BOX, project, REGIONS, unproject } from "./data/poland-map.js";
 import { areaText, peopleText, sizeText } from "./geo-info.js";
+
+function breedStage(collectionId, breedId, className) {
+  return el("span", { class: "breed-stage" }, [
+    el("img", { class: className, src: artFor(collectionId, breedId), alt: "" }),
+  ]);
+}
 
 function avatarImg(id, className) {
   const avatar = avatarById(id);
@@ -70,7 +78,7 @@ function xpBar(profile) {
   const level = playerLevelOf(profile);
   const into = xpInto(profile);
   const need = xpToNext(level);
-  const pct = Math.max(0, Math.min(100, Math.round((into / need) * 100)));
+  const pct = need ? Math.max(0, Math.min(100, Math.round((into / need) * 100))) : 0;
   return el("div", { class: "xp" }, [
     el("span", { class: "xp__level", text: `Poziom gracza ${level}` }),
     el("span", { class: "xp__track", "aria-hidden": "true" }, [
@@ -92,6 +100,7 @@ function goBack() {
   }
   if (route.name === "levels") go("subject", { subjectId: route.subjectId });
   else if (route.name === "subject" || route.name === "collection") go("home");
+  else if (route.name === "theme") go("home");
   else if (route.name === "stats" || route.name === "create") go("profiles");
   else go("home");
 }
@@ -418,54 +427,92 @@ function viewLevels() {
   ]);
 }
 
-const MAP_LABEL = {
-  "zachodniopomorskie": [78, 92],
-  "pomorskie": [186, 78],
-  "warminsko-mazurskie": [276, 82],
-  "podlaskie": [338, 140],
-  "lubuskie": [68, 176],
-  "wielkopolskie": [148, 172],
-  "kujawsko-pomorskie": [208, 156],
-  "mazowieckie": [278, 164],
-  "lubelskie": [338, 214],
-  "dolnoslaskie": [66, 262],
-  "opolskie": [138, 264],
-  "lodzkie": [200, 248],
-  "slaskie": [142, 338],
-  "swietokrzyskie": [202, 322],
-  "malopolskie": [190, 392],
-  "podkarpackie": [286, 360],
+const LABEL_LINES = {
+  "zachodniopomorskie": ["Zachodnio-", "pomorskie"],
+  "warminsko-mazurskie": ["Warmińsko-", "mazurskie"],
+  "kujawsko-pomorskie": ["Kujawsko-", "pomorskie"],
+  "swietokrzyskie": ["Święto-", "krzyskie"],
 };
+
+function labelLines(voi) {
+  if (LABEL_LINES[voi.id]) return LABEL_LINES[voi.id];
+  const name = voi.name || voi.title;
+  return [name.charAt(0).toLocaleUpperCase("pl") + name.slice(1)];
+}
 
 function polandMap(figure, question, round) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("viewBox", "0 0 390 450");
+  svg.setAttribute("viewBox", `0 0 ${MAP_BOX.width} ${MAP_BOX.height}`);
   svg.setAttribute("class", "pl-map");
   svg.setAttribute("role", "group");
-  svg.setAttribute("aria-label", "Mapa województw Polski");
-  for (const voi of VOIVODESHIPS) {
+  svg.setAttribute("aria-label", "Mapa Polski");
+  const pin = figure.mode === "pin";
+  const labels = [];
+  for (const region of REGIONS) {
+    const voi = VOIVODESHIPS.find((item) => item.id === region.id);
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", voi.d);
-    const picked = round?.picked === voi.id;
-    const correct = round?.locked && question?.correctId === voi.id;
-    const wrong = round?.locked && picked && !correct;
+    path.setAttribute("d", region.d);
+    const correct = round?.locked && question?.correctId === region.id && !pin;
+    const wrong = round?.locked && !pin && round.picked === region.id && question?.correctId !== region.id;
     path.setAttribute("class", `pl-region${correct ? " is-correct" : ""}${wrong ? " is-wrong" : ""}`);
-    if (figure.tap && !round?.locked) path.addEventListener("click", () => pickAnswer(voi.id));
+    if (!pin && figure.tap && !round?.locked) path.addEventListener("click", () => pickAnswer(region.id));
     svg.append(path);
-    const at = MAP_LABEL[voi.id];
-    if (at) {
+    if (voi) {
+      const spot = project(voi.lon, voi.lat);
+      const lines = labelLines(voi);
       const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      text.setAttribute("x", String(at[0]));
-      text.setAttribute("y", String(at[1]));
       text.setAttribute("class", "pl-label");
-      text.textContent = voi.label;
-      svg.append(text);
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("pointer-events", "none");
+      const start = spot.y - (lines.length - 1) * 4.2;
+      lines.forEach((line, index) => {
+        const span = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+        span.setAttribute("x", String(spot.x));
+        span.setAttribute("y", String(start + index * 8.4));
+        span.textContent = line;
+        text.append(span);
+      });
+      labels.push(text);
     }
   }
+  for (const text of labels) svg.append(text);
+  if (pin && !round?.locked) {
+    svg.addEventListener("click", (event) => {
+      const rect = svg.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * MAP_BOX.width;
+      const y = ((event.clientY - rect.top) / rect.height) * MAP_BOX.height;
+      const point = unproject(x, y);
+      pickMapPoint(point.lat, point.lon);
+    });
+  }
+  if (round?.locked && question?.pin) {
+    const answer = project(question.pin.lon, question.pin.lat);
+    const mark = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    mark.setAttribute("cx", String(answer.x));
+    mark.setAttribute("cy", String(answer.y));
+    mark.setAttribute("r", "7");
+    mark.setAttribute("class", "pl-dot is-answer");
+    svg.append(mark);
+    if (question.tap) {
+      const tap = project(question.tap.lon, question.tap.lat);
+      const guess = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      guess.setAttribute("cx", String(tap.x));
+      guess.setAttribute("cy", String(tap.y));
+      guess.setAttribute("r", "6");
+      guess.setAttribute("class", round.picked === question.correctId ? "pl-dot is-hit" : "pl-dot is-miss");
+      svg.append(guess);
+    }
+  }
+  const hint = pin
+    ? "Stuknij przybliżone miejsce na mapie."
+    : "Stuknij województwo.";
   return el("div", { class: "pl-map-wrap" }, [
     el("p", { class: "title-figure", text: figure.text }),
     svg,
-    figure.tap && !round?.locked ? el("p", { class: "hint", text: "Stuknij właściwe województwo." }) : null,
+    figure.tap && !round?.locked ? el("p", { class: "hint", text: hint }) : null,
+    round?.locked && question?.distanceKm != null
+      ? el("p", { class: "hint", text: `Odległość od celu: ${question.distanceKm} km. Cel mieści się w ${question.pin.radiusKm} km.` })
+      : null,
   ]);
 }
 
@@ -505,8 +552,8 @@ function viewQuiz() {
   const round = app.round;
   const profile = activeProfile();
   if (!round || !profile) return viewHome();
-  const quizClass = "quiz";
   const question = round.questions[round.index];
+  const quizClass = question?.figure?.type === "pl-map" ? "quiz quiz-map" : "quiz";
   const subject = findSubject(round.subjectId);
   const module = findModule(subject, round.moduleId);
   const hintLevel = round.hintLevels?.[round.index] || 0;
@@ -580,11 +627,19 @@ function viewResults() {
   const hasNext = !round.level.training && nextIndex < module.levels.length && canPlayLevel(profile, subject, module, nextIndex);
   const breedLine = (xp?.breeds || []).map((breed) => breed.name).join(", ");
   const badgeLine = (badges || []).map((badge) => badge.title).join(", ");
+  const collectionFull = !test && xp?.level >= 16;
   let rewardText = test
     ? "Tryb testowy — ten wynik nie jest zapisywany."
     : `+${xp?.amount || 0} XP. Pasek rośnie tak samo w nauce i w egzaminie.`;
-  if (!test && xp?.leveled && breedLine) rewardText = `Poziom gracza ${xp.level}! Nowa rasa: ${breedLine}.`;
-  else if (!test && xp?.leveled) rewardText = `Poziom gracza ${xp.level}! W tej kolekcji masz już wszystkie rasy.`;
+  if (!test && xp?.leveled && breedLine) {
+    rewardText = collectionFull
+      ? `Poziom gracza ${xp.level}! Nowa rasa: ${breedLine}. Kolekcja ukończona!`
+      : `Poziom gracza ${xp.level}! Nowa rasa: ${breedLine}.`;
+  } else if (!test && xp?.leveled && collectionFull) {
+    rewardText = `Poziom gracza ${xp.level}! Kolekcja ukończona!`;
+  } else if (!test && xp?.leveled) {
+    rewardText = `Poziom gracza ${xp.level}!`;
+  }
   if (!test && badgeLine) rewardText = `${rewardText} Odznaka: ${badgeLine}.`;
   return screen([
     el("p", { class: "kicker", text: `${subject.title} · ${module.title} · ${round.level.title}` }),
@@ -595,6 +650,10 @@ function viewResults() {
       !test && improved ? el("p", { class: "hint", text: "Nowy rekord na tym poziomie." }) : null,
       !test && justUnlocked ? el("p", { class: "hint", text: `Odblokowano poziom ${module.levels[nextIndex].title}.` }) : null,
       el("p", { class: "lede", text: rewardText }),
+      (xp?.breeds || []).length ? el("div", { class: "reveal-row" }, xp.breeds.map((breed) => el("figure", { class: "reveal-card" }, [
+        el("img", { class: "breed-art is-reveal", src: breed.art, alt: "" }),
+        el("figcaption", { text: breed.name }),
+      ]))) : null,
       round.result.hints ? el("p", { class: "hint", text: `Podpowiedzi: ${round.result.hints}. Każda obniża wynik o ćwierć pytania.` }) : null,
     ]),
     round.review.length ? el("section", { class: "review" }, [
@@ -627,7 +686,9 @@ function viewCollection() {
   if (!profile) return viewProfiles();
   const collection = collectionById(collectionForAvatar(profile.avatar));
   const owned = new Set(earnedBreeds(profile, collection.id));
+  const complete = !isTestProfile(profile) && owned.size >= collection.breeds.length;
   const picked = collection.breeds.find((breed) => breed.id === app.breed) || null;
+  const revealed = new Set(app.revealBreeds || []);
   const badges = badgesOf(profile).filter((badge) => !isTestProfile(profile) || true);
   const subjectName = { geografia: "Geografia", polski: "Język polski", matematyka: "Matematyka" };
   return screen([
@@ -636,33 +697,43 @@ function viewCollection() {
       go("home");
     }),
     el("h1", { text: `Kolekcja · ${collection.title}` }),
-    el("p", { class: "lede", text: isTestProfile(profile)
-      ? "Podgląd całej kolekcji. W trybie testowym nic się nie zapisuje."
-      : "Gdy pasek XP się zapełni, dostajesz kolejną rasę. Odznaki spadają za cały poziom egzaminu Mix." }),
+    complete
+      ? el("p", { class: "banner is-good", role: "status", text: "Kolekcja ukończona!" })
+      : el("p", { class: "lede", text: isTestProfile(profile)
+        ? "Podgląd całej kolekcji. W trybie testowym nic się nie zapisuje."
+        : "Poziom 1 odsłania pierwszą kartę, poziom 16 ostatnią. Dalej rośnie tylko XP. Odznaki spadają za cały poziom egzaminu Mix." }),
     el("p", { class: "tile__meta", text: `${owned.size} z ${collection.breeds.length}` }),
-    el("div", { class: "breed-grid" }, collection.breeds.map((breed) => {
+    el("div", { class: "breed-grid" }, collection.breeds.map((breed, index) => {
       const open = owned.has(breed.id);
       return el("button", {
         type: "button",
-        class: open ? "breed-card" : "breed-card is-locked",
+        class: `breed-card is-${rarityOf(index, collection.breeds.length)}${open ? "" : " is-locked"}${open && revealed.has(breed.id) ? " is-reveal" : ""}`,
         onClick: () => {
           if (!open) return;
           app.breed = breed.id;
           go("collection");
         },
       }, [
-        el("img", { class: "breed-art", src: artFor(collection.id, breed.id), alt: "" }),
-        el("span", { text: open ? breed.name : "???" }),
+        breedStage(collection.id, breed.id, "breed-art"),
+        el("span", { class: `sticker-label is-tone-${index % 6}`, text: open ? breed.name : "???" }),
       ]);
     })),
     picked ? el("article", { class: "breed-detail" }, [
-      el("img", { class: "breed-art breed-art--lg", src: artFor(collection.id, picked.id), alt: "" }),
-      el("h2", { text: picked.name }),
+      breedStage(collection.id, picked.id, "breed-art breed-art--lg"),
+      el("h2", {
+        class: `sticker-label sticker-label--lg is-tone-${collection.breeds.indexOf(picked) % 6}`,
+        text: picked.name,
+      }),
       el("p", { text: `${collection.labels?.origin || "Pochodzenie"}: ${picked.origin}` }),
       el("p", { text: `${collection.labels?.size || "Wielkość"}: ${picked.size}` }),
       el("p", { text: `${collection.labels?.character || "Charakter"}: ${picked.character}` }),
       el("p", { class: "fact-card__fact", text: picked.fact }),
     ]) : null,
+    el("button", {
+      type: "button",
+      class: "btn btn-ghost btn-block",
+      onClick: () => go("theme", { profileId: profile.id }),
+    }, "Zmień obrazek"),
     el("h2", { text: "Odznaki" }),
     badges.length
       ? el("ul", { class: "badge-list" }, badges.map((badge) => el("li", {}, [
@@ -704,6 +775,11 @@ function viewStats() {
       : el("p", { class: "hint", text: "Tu pojawią się kraje, słowa i działania, które wracają najczęściej." }),
     el("div", { class: "stack" }, [
       el("p", { class: "hint", text: "Postępy to gwiazdki, poziomy, XP i kolekcja. Pamięć odpowiedzi to tylko to, które pytania wracają częściej." }),
+      el("button", {
+        type: "button",
+        class: "btn btn-ghost btn-block",
+        onClick: () => go("theme", { profileId: profile.id }),
+      }, "Zmień obrazek"),
       el("button", {
         type: "button",
         class: "btn btn-ghost btn-block",
@@ -762,7 +838,36 @@ function modal() {
   ]);
 }
 
+function viewTheme() {
+  const profile = profiles().find((item) => item.id === app.route.profileId) || activeProfile();
+  if (!profile || isTestProfile(profile)) return viewProfiles();
+  const forced = avatarNeedsChoice(profile.avatar);
+  return screen([
+    forced ? null : back("Wróć", () => go(app.route.from || "home")),
+    el("h1", { text: forced ? "Wybierz nowy obrazek" : "Zmień obrazek" }),
+    el("p", { class: "lede", text: forced
+      ? `${profile.name}, ten obrazek nie ma już własnej kolekcji. Wybierz nowy. Poziom i XP zostają. Odsłonięte karty to tyle, ile wynosi poziom, najwyżej szesnaście.`
+      : "Nowy obrazek zmienia kolekcję. Poziom i XP zostają. Odsłonięte karty to tyle, ile wynosi poziom, najwyżej szesnaście." }),
+    el("div", { class: "avatar-grid" }, AVATARS.map((avatar) => el("button", {
+      type: "button",
+      class: "avatar-pick",
+      onClick: () => {
+        setAvatar(profile.id, avatar.id);
+        go("home");
+      },
+    }, [
+      el("img", { src: avatar.src, alt: "" }),
+      el("span", { text: avatar.label }),
+      el("small", { text: avatar.collects }),
+    ]))),
+  ], "screen--narrow");
+}
+
 export function renderApp() {
+  const profile = activeProfile();
+  if (profile && !isTestProfile(profile) && avatarNeedsChoice(profile.avatar) && app.route.name !== "theme") {
+    app.route = { name: "theme", profileId: profile.id, forced: true };
+  }
   const route = app.route.name;
   let main = viewHome();
   if (route === "profiles") main = viewProfiles();
@@ -773,6 +878,7 @@ export function renderApp() {
   else if (route === "quiz") main = viewQuiz();
   else if (route === "results") main = viewResults();
   else if (route === "collection") main = viewCollection();
+  else if (route === "theme") main = viewTheme();
   else if (route === "stats") main = viewStats();
   const shell = el("div", { class: "shell" }, [header(), main]);
   const dialog = modal();

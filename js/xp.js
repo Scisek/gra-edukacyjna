@@ -1,10 +1,11 @@
 import { artFor, collectionById } from "./data/breeds.js";
 import { collectionForAvatar as collectionIdFor } from "./avatars.js";
-import { isTestProfile } from "./storage.js";
+import { isTestProfile, persist, profiles } from "./storage.js";
 import { subjects } from "./registry.js";
 
 function activeCollection(profile) {
-  return collectionById(collectionIdFor(profile?.avatar));
+  const id = collectionIdFor(profile?.avatar);
+  return id ? collectionById(id) : null;
 }
 
 const TIER_MULT = { 1: 1, 2: 3, 3: 6, 4: 10 };
@@ -51,39 +52,86 @@ export function nextBreed(profile, collectionId) {
   return collectionById(collectionId).breeds.find((breed) => !owned.has(breed.id)) || null;
 }
 
-function grantBreed(profile) {
+function packBreed(collection, breed) {
+  return {
+    ...breed,
+    collectionId: collection.id,
+    art: artFor(collection.id, breed.id),
+    collectionTitle: collection.title,
+  };
+}
+
+function fillBreeds(profile) {
   const collection = activeCollection(profile);
-  const breed = nextBreed(profile, collection.id);
-  if (!breed || isTestProfile(profile)) return null;
-  bag(profile, collection.id).push(breed.id);
-  return { ...breed, collectionId: collection.id, art: artFor(collection.id, breed.id), collectionTitle: collection.title };
+  if (!collection || isTestProfile(profile)) return [];
+  const cap = Math.min(collection.breeds.length, Math.max(1, Number(profile.playerLevel) || 1));
+  const owned = bag(profile, collection.id);
+  const known = new Set(owned);
+  const fresh = [];
+  for (const breed of collection.breeds) {
+    if (owned.length >= cap) break;
+    if (known.has(breed.id)) continue;
+    owned.push(breed.id);
+    known.add(breed.id);
+    fresh.push(packBreed(collection, breed));
+  }
+  return fresh;
+}
+
+function applyLevels(profile) {
+  profile.playerLevel = Math.max(1, Number(profile.playerLevel) || 1);
+  profile.xp = Math.max(0, Number(profile.xp) || 0);
+  const breeds = fillBreeds(profile);
+  let leveled = false;
+  let guard = 0;
+  while (profile.xp >= xpToNext(profile.playerLevel) && guard < 80) {
+    profile.xp -= xpToNext(profile.playerLevel);
+    profile.playerLevel += 1;
+    leveled = true;
+    breeds.push(...fillBreeds(profile));
+    guard += 1;
+  }
+  return {
+    leveled,
+    breeds,
+    level: profile.playerLevel,
+    into: profile.xp,
+    need: xpToNext(profile.playerLevel),
+  };
+}
+
+export function settleXp(profile) {
+  if (!profile || isTestProfile(profile)) {
+    const level = playerLevelOf(profile);
+    return { leveled: false, breeds: [], level, into: xpInto(profile), need: xpToNext(level) };
+  }
+  return applyLevels(profile);
 }
 
 export function addXp(profile, amount) {
   if (!amount || isTestProfile(profile)) {
-    return { amount: 0, level: playerLevelOf(profile), breeds: [], into: xpInto(profile), need: xpToNext(playerLevelOf(profile)), leveled: false };
+    const level = playerLevelOf(profile);
+    return { amount: 0, leveled: false, breeds: [], level, into: xpInto(profile), need: xpToNext(level) };
   }
   profile.playerLevel = profile.playerLevel || 1;
   profile.xp = (profile.xp || 0) + amount;
-  const breeds = [];
-  let leveled = false;
-  let guard = 0;
-  while (profile.xp >= xpToNext(profile.playerLevel) && guard < 12) {
-    profile.xp -= xpToNext(profile.playerLevel);
-    profile.playerLevel += 1;
-    leveled = true;
-    const breed = grantBreed(profile);
-    if (breed) breeds.push(breed);
-    guard += 1;
+  return { amount, ...applyLevels(profile) };
+}
+
+export function settleStoredXp() {
+  let changed = false;
+  for (const profile of profiles()) {
+    if (isTestProfile(profile)) continue;
+    const before = JSON.stringify(profile.breeds || {});
+    const level = profile.playerLevel;
+    const xp = profile.xp;
+    settleXp(profile);
+    if (before !== JSON.stringify(profile.breeds || {}) || level !== profile.playerLevel || xp !== profile.xp) {
+      changed = true;
+    }
   }
-  return {
-    amount,
-    level: profile.playerLevel,
-    breeds,
-    into: profile.xp,
-    need: xpToNext(profile.playerLevel),
-    leveled,
-  };
+  if (changed) persist();
+  return changed;
 }
 
 export function badgesOf(profile) {
@@ -106,6 +154,7 @@ export function badgesOf(profile) {
 export function maybeAwardBadges(profile, subject, module) {
   if (!module || module.role !== "egzamin" || isTestProfile(profile)) return [];
   const collection = activeCollection(profile);
+  if (!collection) return [];
   profile.badges = profile.badges || [];
   const owned = new Set(profile.badges.map((badge) => badge.id));
   const fresh = [];
