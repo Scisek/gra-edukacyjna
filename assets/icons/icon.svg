@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Skarby wiedzy">
+  <rect width="512" height="512" fill="#0b0d19"/>
+  <circle cx="256" cy="220" r="150" fill="#171d38"/>
+  <circle cx="120" cy="90" r="3" fill="#fff"/>
+  <circle cx="390" cy="70" r="2.5" fill="#7ef6ff"/>
+  <circle cx="420" cy="160" r="2" fill="#fff"/>
+  <circle cx="80" cy="180" r="2" fill="#ffe14a"/>
+  <circle cx="360" cy="300" r="2.2" fill="#ff8ec0"/>
+  <path fill="#ffe14a" d="M256 108l28 62 68 8-50 46 14 66-60-34-60 34 14-66-50-46 68-8z"/>
+  <path fill="#c9a400" d="M196 318h120l18 46H178z"/>
+  <rect x="188" y="360" width="136" height="28" rx="6" fill="#ffc078"/>
+  <rect x="236" y="348" width="40" height="22" rx="4" fill="#ffe14a"/>
+</svg>

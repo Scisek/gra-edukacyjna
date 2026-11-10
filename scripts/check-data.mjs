@@ -166,6 +166,27 @@ for (const subject of subjects) {
   }
 }
 
+const adultEasy = presentLevel({ audience: "dorosly" }, geographyLevels()[0], "geografia-panstwa");
+if (adultEasy.options !== 3 || adultEasy.band !== 1) fail("dorosły łatwy geo nie jest łagodny");
+for (let i = 0; i < 25; i += 1) {
+  const question = makeFlagQuestion(adultEasy, new Set());
+  const country = countries.find((item) => item.id === question.correctId);
+  if (!country || country.band !== 1) fail(`dorosły łatwy wylosował ${country?.name}`);
+  if (question.options.length !== 3) fail("dorosły łatwy geo nie ma 3 odpowiedzi");
+}
+const adultMaster = presentLevel({ audience: "dorosly" }, geographyLevels().find((level) => level.tier === 4), "geografia-panstwa");
+if (adultMaster.options !== 4 || !adultMaster.seconds) fail("dorosły mistrz geo nie jest trudniejszy");
+const adultPoland = presentLevel({ audience: "dorosly" }, { tier: 1, step: 1, band: 1 }, "geografia-polska");
+const bigCities = cityPool(adultPoland);
+if (!bigCities.length || bigCities.some((city) => city.pop < 180000)) fail("dorosła łatwa Polska nie zaczyna od dużych miast");
+const adultPolandHard = presentLevel({ audience: "dorosly" }, { tier: 4, step: 1, band: 4 }, "geografia-polska");
+const smallCities = cityPool(adultPolandHard);
+if (!smallCities.length || smallCities.some((city) => city.pop >= 120000)) fail("dorosły mistrz Polski nie schodzi do małych miast");
+if (!COLLECTIONS.kot.menu || COLLECTIONS.genealog.menu !== "Kolekcja genealoga") fail("zła nazwa kolekcji");
+if (COLLECTIONS.kwiat?.menu !== "Kolekcja kwiatów" || COLLECTIONS.owoc?.menu !== "Kolekcja owoców") fail("brak kolekcji kwiatów albo owoców");
+if (COLLECTIONS.kwiat.breeds[0].id !== "stokrotka" || COLLECTIONS.owoc.breeds[0].id !== "jablko") fail("zła kolejność nowych kolekcji");
+if (countries.length !== 197 || countries.some((country) => !country.capital)) fail("brak stolicy");
+
 if (errors.length) {
   console.error(errors.join("\n"));
   process.exit(1);

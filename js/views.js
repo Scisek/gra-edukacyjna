@@ -31,13 +31,32 @@ import { findModule, findSubject, subjects } from "./registry.js";
 import { isAdult, presentLevel } from "./audience.js";
 import { canPlayLevel, examTierOpen, resultHeadline, trainingOpen, unlockedIndex } from "./progress.js";
 import { AVATARS, avatarById, avatarNeedsChoice, collectionForAvatar } from "./avatars.js";
-import { artFor, collectionById, rarityOf } from "./data/breeds.js";
+import { artFor, collectionById, collectionMenu, rarityOf } from "./data/breeds.js";
 import { badgesOf, earnedBreeds, playerLevelOf, xpInto, xpToNext } from "./xp.js";
 import { topMisses } from "./review.js";
 import { countryById } from "./data/countries.js";
 import { VOIVODESHIPS } from "./data/poland.js";
 import { MAP_BOX, project, REGIONS, unproject } from "./data/poland-map.js";
-import { areaText, peopleText, sizeText } from "./geo-info.js";
+import { areaText, peopleText } from "./geo-info.js";
+
+function menuFor(profile) {
+  const id = collectionForAvatar(profile?.avatar);
+  return collectionMenu(id ? collectionById(id) : null);
+}
+
+function showOwnedCard(breedId) {
+  app.breed = breedId;
+  go("collection");
+  requestAnimationFrame(() => {
+    const panel = document.querySelector(".breed-detail");
+    if (!panel) return;
+    const header = document.querySelector(".topbar");
+    const offset = Math.ceil((header?.getBoundingClientRect().height || 0) + 12);
+    panel.style.scrollMarginTop = `${offset}px`;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    panel.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+  });
+}
 
 function breedStage(collectionId, breedId, className) {
   return el("span", { class: "breed-stage" }, [
@@ -204,7 +223,7 @@ function viewProfiles() {
   return screen([
     el("p", { class: "kicker", text: "Jedno urządzenie, kilka osób" }),
     el("h1", { text: hasPlayers ? "Kto dzisiaj gra?" : "Załóż profil gracza" }),
-    el("p", { class: "lede", text: "Każde dziecko ma własne gwiazdki, poziomy i kolekcję ras. Wyniki zostają w tej przeglądarce. Profil Rodzic tylko podgląda grę." }),
+    el("p", { class: "lede", text: "Każde dziecko ma własne gwiazdki, poziomy i kolekcję. Wyniki zostają w tej przeglądarce. Profil Rodzic tylko podgląda grę." }),
     hasPlayers ? profileCards() : el("img", { class: "hero-art", src: "assets/art/wyprawa.svg", alt: "" }),
     parentCard(),
     el("button", {
@@ -311,7 +330,7 @@ function viewHome() {
     storageNote(),
     el("p", { class: "kicker", text: "Wybierz, czego dziś się uczysz" }),
     el("h1", { text: `Witaj, ${profile.name}` }),
-    isAdult(profile) ? el("p", { class: "hint", text: "Tryb dorosły: od razu trudniejsze pytania." }) : null,
+    isAdult(profile) ? el("p", { class: "hint", text: "Tryb dorosły: matematyka i ortografia od razu trudniejsze. Geografia zaczyna od znanych miejsc." }) : null,
     el("div", { class: "subject-grid" }, subjects.map((subject) => {
       const soon = subject.status === "soon";
       const modules = (subject.modules || []).filter((module) => module.status !== "soon").length;
@@ -337,7 +356,7 @@ function viewHome() {
       type: "button",
       class: "btn btn-primary btn-block map-link",
       onClick: () => go("collection"),
-    }, "Kolekcja ras"),
+    }, menuFor(profile)),
   ]);
 }
 
@@ -393,7 +412,7 @@ function viewLevels() {
       ? "Tryb testowy: wszystko jest otwarte, a wynik się nie zapisuje."
       : exam
         ? "Egzamin otwiera się po nauce tego poziomu. Dwie gwiazdki na całym poziomie dają odznakę. XP dostajesz tak samo jak w nauce."
-        : "Dwie gwiazdki otwierają kolejny podpoziom. Każda runda dodaje XP. Nowa rasa czeka, gdy pasek się zapełni." }),
+        : "Dwie gwiazdki otwierają kolejny podpoziom. Każda runda dodaje XP. Nowa karta czeka, gdy pasek się zapełni." }),
     ...groups.map((group) => {
       const gate = exam && !examTierOpen(profile, subject, group.tier);
       return el("section", { class: "level-group" }, [
@@ -443,6 +462,7 @@ function labelLines(voi) {
 function polandMap(figure, question, round) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", `0 0 ${MAP_BOX.width} ${MAP_BOX.height}`);
+  svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
   svg.setAttribute("class", "pl-map");
   svg.setAttribute("role", "group");
   svg.setAttribute("aria-label", "Mapa Polski");
@@ -479,8 +499,11 @@ function polandMap(figure, question, round) {
   if (pin && !round?.locked) {
     svg.addEventListener("click", (event) => {
       const rect = svg.getBoundingClientRect();
-      const x = ((event.clientX - rect.left) / rect.width) * MAP_BOX.width;
-      const y = ((event.clientY - rect.top) / rect.height) * MAP_BOX.height;
+      const scale = Math.min(rect.width / MAP_BOX.width, rect.height / MAP_BOX.height);
+      const drawnW = MAP_BOX.width * scale;
+      const drawnH = MAP_BOX.height * scale;
+      const x = (event.clientX - rect.left - (rect.width - drawnW) / 2) / scale;
+      const y = (event.clientY - rect.top - (rect.height - drawnH) / 2) / scale;
       const point = unproject(x, y);
       pickMapPoint(point.lat, point.lon);
     });
@@ -539,12 +562,20 @@ function figureBlock(figure, question, round) {
   return el("p", { class: "title-figure", text: figure.text });
 }
 
+function factRow(label, value) {
+  return el("p", {}, [
+    document.createTextNode(`${label}: `),
+    el("strong", { text: value }),
+  ]);
+}
+
 function factCard(country) {
   return el("section", { class: "fact-card" }, [
     el("p", { class: "fact-card__title", text: country.name }),
-    el("p", { text: `${country.continent} · ${areaText(country.area)} · ${sizeText(country)}` }),
-    el("p", { text: `Ludność: ${peopleText(country.population)}` }),
-    el("p", { class: "fact-card__fact", text: country.fact }),
+    factRow("Stolica", country.capital),
+    factRow("Liczba ludności", peopleText(country.population)),
+    factRow("Powierzchnia", areaText(country.area)),
+    el("p", { class: "fact-card__fact", text: `Ciekawostka: ${country.fact}` }),
   ]);
 }
 
@@ -633,8 +664,8 @@ function viewResults() {
     : `+${xp?.amount || 0} XP. Pasek rośnie tak samo w nauce i w egzaminie.`;
   if (!test && xp?.leveled && breedLine) {
     rewardText = collectionFull
-      ? `Poziom gracza ${xp.level}! Nowa rasa: ${breedLine}. Kolekcja ukończona!`
-      : `Poziom gracza ${xp.level}! Nowa rasa: ${breedLine}.`;
+      ? `Poziom gracza ${xp.level}! Nowa karta: ${breedLine}. Kolekcja ukończona!`
+      : `Poziom gracza ${xp.level}! Nowa karta: ${breedLine}.`;
   } else if (!test && xp?.leveled && collectionFull) {
     rewardText = `Poziom gracza ${xp.level}! Kolekcja ukończona!`;
   } else if (!test && xp?.leveled) {
@@ -671,7 +702,7 @@ function viewResults() {
         class: "btn btn-ghost btn-block",
         onClick: () => startRound(subject.id, module.id, nextIndex),
       }, `Poziom ${module.levels[nextIndex].title}`) : null,
-      el("button", { type: "button", class: "btn btn-ghost btn-block", onClick: () => go("collection") }, "Kolekcja"),
+      el("button", { type: "button", class: "btn btn-ghost btn-block", onClick: () => go("collection") }, menuFor(profile)),
       el("button", {
         type: "button",
         class: "btn btn-quiet btn-block",
@@ -710,8 +741,7 @@ function viewCollection() {
         class: `breed-card is-${rarityOf(index, collection.breeds.length)}${open ? "" : " is-locked"}${open && revealed.has(breed.id) ? " is-reveal" : ""}`,
         onClick: () => {
           if (!open) return;
-          app.breed = breed.id;
-          go("collection");
+          showOwnedCard(breed.id);
         },
       }, [
         breedStage(collection.id, breed.id, "breed-art"),
@@ -774,6 +804,14 @@ function viewStats() {
       ])))
       : el("p", { class: "hint", text: "Tu pojawią się kraje, słowa i działania, które wracają najczęściej." }),
     el("div", { class: "stack" }, [
+      el("button", {
+        type: "button",
+        class: "btn btn-primary btn-block",
+        onClick: () => {
+          switchTo(profile.id);
+          go("collection");
+        },
+      }, menuFor(profile)),
       el("p", { class: "hint", text: "Postępy to gwiazdki, poziomy, XP i kolekcja. Pamięć odpowiedzi to tylko to, które pytania wracają częściej." }),
       el("button", {
         type: "button",
