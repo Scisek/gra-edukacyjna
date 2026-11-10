@@ -40,6 +40,15 @@ import { VOIVODESHIPS } from "./data/poland.js";
 import { MAP_BOX, project, REGIONS, unproject } from "./data/poland-map.js";
 import { areaText, peopleText, sizeText } from "./geo-info.js";
 
+const FRAMED_BREEDS = new Set(["stegozaur", "hdd", "ram"]);
+
+function breedStage(collectionId, breedId, className) {
+  const framed = collectionId === "gory" || collectionId === "genealog" || FRAMED_BREEDS.has(breedId);
+  return el("span", { class: framed ? "breed-stage is-framed" : "breed-stage is-cutout" }, [
+    el("img", { class: className, src: artFor(collectionId, breedId), alt: "" }),
+  ]);
+}
+
 function creditLine(collectionId, breedId) {
   const credit = creditFor(collectionId, breedId);
   if (!credit) return null;
@@ -428,24 +437,18 @@ function viewLevels() {
   ]);
 }
 
-const MAP_LABEL = {
-  "zachodniopomorskie": [78, 92],
-  "pomorskie": [186, 78],
-  "warminsko-mazurskie": [276, 82],
-  "podlaskie": [338, 140],
-  "lubuskie": [68, 176],
-  "wielkopolskie": [148, 172],
-  "kujawsko-pomorskie": [208, 156],
-  "mazowieckie": [278, 164],
-  "lubelskie": [338, 214],
-  "dolnoslaskie": [66, 262],
-  "opolskie": [138, 264],
-  "lodzkie": [200, 248],
-  "slaskie": [142, 338],
-  "swietokrzyskie": [202, 322],
-  "malopolskie": [190, 392],
-  "podkarpackie": [286, 360],
+const LABEL_LINES = {
+  "zachodniopomorskie": ["Zachodnio-", "pomorskie"],
+  "warminsko-mazurskie": ["Warmińsko-", "mazurskie"],
+  "kujawsko-pomorskie": ["Kujawsko-", "pomorskie"],
+  "swietokrzyskie": ["Święto-", "krzyskie"],
 };
+
+function labelLines(voi) {
+  if (LABEL_LINES[voi.id]) return LABEL_LINES[voi.id];
+  const name = voi.name || voi.title;
+  return [name.charAt(0).toLocaleUpperCase("pl") + name.slice(1)];
+}
 
 function polandMap(figure, question, round) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -454,6 +457,7 @@ function polandMap(figure, question, round) {
   svg.setAttribute("role", "group");
   svg.setAttribute("aria-label", "Mapa Polski");
   const pin = figure.mode === "pin";
+  const labels = [];
   for (const region of REGIONS) {
     const voi = VOIVODESHIPS.find((item) => item.id === region.id);
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -465,14 +469,23 @@ function polandMap(figure, question, round) {
     svg.append(path);
     if (voi) {
       const spot = project(voi.lon, voi.lat);
+      const lines = labelLines(voi);
       const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      text.setAttribute("x", String(spot.x));
-      text.setAttribute("y", String(spot.y));
       text.setAttribute("class", "pl-label");
-      text.textContent = voi.label;
-      svg.append(text);
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("pointer-events", "none");
+      const start = spot.y - (lines.length - 1) * 4.2;
+      lines.forEach((line, index) => {
+        const span = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+        span.setAttribute("x", String(spot.x));
+        span.setAttribute("y", String(start + index * 8.4));
+        span.textContent = line;
+        text.append(span);
+      });
+      labels.push(text);
     }
   }
+  for (const text of labels) svg.append(text);
   if (pin && !round?.locked) {
     svg.addEventListener("click", (event) => {
       const rect = svg.getBoundingClientRect();
@@ -695,12 +708,12 @@ function viewCollection() {
           go("collection");
         },
       }, [
-        el("img", { class: "breed-art", src: artFor(collection.id, breed.id), alt: "" }),
+        breedStage(collection.id, breed.id, "breed-art"),
         el("span", { text: open ? breed.name : "???" }),
       ]);
     })),
     picked ? el("article", { class: "breed-detail" }, [
-      el("img", { class: "breed-art breed-art--lg", src: artFor(collection.id, picked.id), alt: "" }),
+      breedStage(collection.id, picked.id, "breed-art breed-art--lg"),
       el("h2", { text: picked.name }),
       el("p", { text: `${collection.labels?.origin || "Pochodzenie"}: ${picked.origin}` }),
       el("p", { text: `${collection.labels?.size || "Wielkość"}: ${picked.size}` }),

@@ -1348,6 +1348,44 @@ p {
   font-size: 0.78rem;
 }
 
+.breed-stage {
+  position: relative;
+  display: grid;
+  place-items: end center;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 28% 18%, rgba(0, 240, 255, 0.38), transparent 42%),
+    radial-gradient(circle at 82% 78%, rgba(171, 0, 255, 0.42), transparent 48%),
+    radial-gradient(circle at 50% 60%, #1a2348, #0b0d19 72%);
+}
+
+.breed-stage::before {
+  content: "";
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  box-shadow:
+    14px 22px 0 #fff,
+    46px 12px 0 rgba(255, 255, 255, 0.85),
+    72px 36px 0 #7ef6ff,
+    24px 58px 0 #fff,
+    88px 64px 0 rgba(255, 255, 255, 0.75);
+  pointer-events: none;
+}
+
+.breed-stage.is-framed::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 42%, transparent 36%, rgba(11, 13, 25, 0.2) 68%, rgba(88, 0, 140, 0.55) 100%);
+  pointer-events: none;
+}
+
 .breed-card.is-locked .breed-art {
   filter: blur(14px) grayscale(1) brightness(0.28);
 }
@@ -1363,15 +1401,25 @@ p {
   font-size: 0.75rem;
 }
 
-.breed-art {
+.breed-stage.is-cutout .breed-art {
+  width: 92%;
+  height: 88%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.breed-stage.is-framed .breed-art {
   width: 100%;
-  aspect-ratio: 6 / 7;
+  height: 100%;
   object-fit: cover;
-  border-radius: 16px;
 }
 
 .breed-art--lg {
-  width: min(100%, 220px);
+  width: min(100%, 240px);
+}
+
+.breed-detail .breed-stage {
+  width: min(100%, 240px);
   margin: 0 auto;
 }
 
@@ -1426,10 +1474,14 @@ p {
 
 .pl-label {
   fill: #f7f8ff;
-  font-size: 13px;
-  font-family: var(--font-display);
+  font-size: 7.5px;
+  font-weight: 600;
+  font-family: var(--font);
   text-anchor: middle;
   pointer-events: none;
+  paint-order: stroke;
+  stroke: rgba(8, 12, 24, 0.72);
+  stroke-width: 2px;
 }
 
 .badge-list {
