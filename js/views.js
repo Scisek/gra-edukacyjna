@@ -703,11 +703,11 @@ function viewCollection() {
         ? "Podgląd całej kolekcji. W trybie testowym nic się nie zapisuje."
         : "Poziom 1 odsłania pierwszą kartę, poziom 16 ostatnią. Dalej rośnie tylko XP. Odznaki spadają za cały poziom egzaminu Mix." }),
     el("p", { class: "tile__meta", text: `${owned.size} z ${collection.breeds.length}` }),
-    el("div", { class: "breed-grid" }, collection.breeds.map((breed) => {
+    el("div", { class: "breed-grid" }, collection.breeds.map((breed, index) => {
       const open = owned.has(breed.id);
       return el("button", {
         type: "button",
-        class: `breed-card is-${rarityOf(collection.breeds.indexOf(breed), collection.breeds.length)}${open ? "" : " is-locked"}${open && revealed.has(breed.id) ? " is-reveal" : ""}`,
+        class: `breed-card is-${rarityOf(index, collection.breeds.length)}${open ? "" : " is-locked"}${open && revealed.has(breed.id) ? " is-reveal" : ""}`,
         onClick: () => {
           if (!open) return;
           app.breed = breed.id;
@@ -715,12 +715,15 @@ function viewCollection() {
         },
       }, [
         breedStage(collection.id, breed.id, "breed-art"),
-        el("span", { text: open ? breed.name : "???" }),
+        el("span", { class: `sticker-label is-tone-${index % 6}`, text: open ? breed.name : "???" }),
       ]);
     })),
     picked ? el("article", { class: "breed-detail" }, [
       breedStage(collection.id, picked.id, "breed-art breed-art--lg"),
-      el("h2", { text: picked.name }),
+      el("h2", {
+        class: `sticker-label sticker-label--lg is-tone-${collection.breeds.indexOf(picked) % 6}`,
+        text: picked.name,
+      }),
       el("p", { text: `${collection.labels?.origin || "Pochodzenie"}: ${picked.origin}` }),
       el("p", { text: `${collection.labels?.size || "Wielkość"}: ${picked.size}` }),
       el("p", { text: `${collection.labels?.character || "Charakter"}: ${picked.character}` }),

@@ -1219,7 +1219,6 @@ p {
 .module-card,
 .profile-card,
 .level-tile,
-.breed-card,
 .breed-detail {
   background: var(--surface);
   border: 2px solid var(--line);
@@ -1334,19 +1333,22 @@ p {
 .breed-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px 6px;
   margin-bottom: 16px;
 }
 
 .breed-card {
   display: grid;
-  gap: 4px;
+  align-content: start;
   justify-items: center;
-  padding: 6px;
+  gap: 2px;
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
   color: var(--ink);
   text-align: center;
-  font-size: 0.68rem;
-  line-height: 1.15;
 }
 
 .breed-stage {
@@ -1355,13 +1357,60 @@ p {
   place-items: center;
   width: 100%;
   aspect-ratio: 1;
-  overflow: hidden;
-  border-radius: 14px;
-  background: radial-gradient(circle at 50% 42%, #1b2448, #0b0d19 72%);
+  overflow: visible;
+  background: none;
 }
 
+.breed-card.is-common .breed-art { filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 12px rgba(0, 240, 255, 0.55)); }
+.breed-card.is-rare .breed-art { filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 12px rgba(192, 132, 252, 0.6)); }
+.breed-card.is-epic .breed-art { filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 12px rgba(255, 79, 163, 0.55)); }
+.breed-card.is-legend .breed-art { filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 14px rgba(255, 230, 0, 0.55)); }
+
 .breed-card.is-locked .breed-art {
-  filter: brightness(0) drop-shadow(0 0 6px rgba(126, 246, 255, 0.55));
+  filter: brightness(0) drop-shadow(0 0 8px rgba(126, 246, 255, 0.5));
+}
+
+.sticker-label {
+  --label: #7ef6ff;
+  --label-shadow: #0a6f91;
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 2px 3px 3px;
+  border-radius: 7px;
+  background: #070b16;
+  color: var(--label);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.5rem;
+  line-height: 1.05;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  text-align: center;
+  transform: rotate(-3deg);
+  text-shadow:
+    -1px -1px 0 #fff,
+    1px -1px 0 #fff,
+    -1px 1px 0 #fff,
+    1px 1px 0 #fff,
+    0 2px 0 var(--label-shadow);
+}
+
+.sticker-label.is-tone-0 { --label: #ffe600; --label-shadow: #b8860b; }
+.sticker-label.is-tone-1 { --label: #39ff8a; --label-shadow: #0d8a45; }
+.sticker-label.is-tone-2 { --label: #ff4fa3; --label-shadow: #b01258; }
+.sticker-label.is-tone-3 { --label: #c084fc; --label-shadow: #6d28d9; }
+.sticker-label.is-tone-4 { --label: #7ef6ff; --label-shadow: #0a6f91; }
+.sticker-label.is-tone-5 { --label: #ff9f43; --label-shadow: #c45c00; }
+
+.sticker-label--lg {
+  width: fit-content;
+  max-width: 100%;
+  margin: 4px auto 8px;
+  padding: 6px 14px 7px;
+  font-size: 1.05rem;
+  line-height: 1.1;
+  border-radius: 12px;
 }
 
 .breed-card.is-reveal .breed-art,
@@ -1399,14 +1448,8 @@ p {
   width: 96px;
   height: 96px;
   object-fit: contain;
-  border-radius: 16px;
-  background: radial-gradient(circle at 50% 42%, #1b2448, #0b0d19 72%);
+  filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 12px rgba(0, 240, 255, 0.45));
 }
-
-.breed-card.is-common { box-shadow: 0 0 0 2px #7ef6ff, 0 0 16px rgba(0, 240, 255, 0.35); }
-.breed-card.is-rare { box-shadow: 0 0 0 2px #c084fc, 0 0 16px rgba(192, 132, 252, 0.4); }
-.breed-card.is-epic { box-shadow: 0 0 0 2px #ff4fa3, 0 0 16px rgba(255, 79, 163, 0.4); }
-.breed-card.is-legend { box-shadow: 0 0 0 2px #ffe600, 0 0 18px rgba(255, 230, 0, 0.45); }
 
 .credit {
   margin: 8px 0 0;
