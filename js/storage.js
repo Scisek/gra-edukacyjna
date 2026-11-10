@@ -1,4 +1,5 @@
-import { AVATARS } from "./avatars.js";
+import { AVATARS, collectionForAvatar } from "./avatars.js";
+import { collectionById } from "./data/breeds.js";
 import { subjects } from "./registry.js";
 
 const KEY = "skarb-wiedzy-v1";
@@ -64,7 +65,7 @@ function ensure(profile) {
   profile.legacyExam = profile.legacyExam && typeof profile.legacyExam === "object" ? profile.legacyExam : {};
   profile.playerLevel = Number(profile.playerLevel) || 1;
   profile.xp = Number(profile.xp) || 0;
-  if (!AVATARS.some((item) => item.id === profile.avatar)) profile.avatar = AVATARS[0].id;
+  if (!profile.avatar) profile.avatar = AVATARS[0].id;
   if ((profile.progressVersion || 0) < 2) migrateProgress(profile);
   if ((profile.progressVersion || 0) < 3) migrateCatalog(profile);
   if (profile.audience !== "dorosly" && profile.audience !== "dziecko") profile.audience = "dziecko";
@@ -234,6 +235,19 @@ export function nameError(value) {
 function uid() {
   if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
   return `p-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+export function setAvatar(id, avatarId) {
+  if (id === PARENT_ID) return;
+  const profile = state.profiles.find((item) => item.id === id);
+  const collectionId = collectionForAvatar(avatarId);
+  const collection = collectionId ? collectionById(collectionId) : null;
+  if (!profile || !collection || !AVATARS.some((item) => item.id === avatarId)) return;
+  const count = Math.min(collection.breeds.length, Math.max(0, (profile.playerLevel || 1) - 1));
+  profile.avatar = avatarId;
+  profile.breeds = profile.breeds || {};
+  profile.breeds[collectionId] = collection.breeds.slice(0, count).map((breed) => breed.id);
+  persist();
 }
 
 export function createProfile(name, avatar, audience) {

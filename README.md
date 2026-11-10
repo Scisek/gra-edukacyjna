@@ -30,7 +30,9 @@ Po ostatnim podpoziomie jest **Trening**: nieskończona powtórka tego, co dziec
 
 **Geografia – państwa** to flagi, stolice, państwa i egzamin Mix. W puli jest 193 członków ONZ oraz Watykan, Palestyna, Kosowo i Tajwan.
 
-**Geografia – Polska** to osobny przedmiot: województwa (także stuknięcie na mapie), stolice — kujawsko-pomorskie ma Bydgoszcz i Toruń, lubuskie Gorzów Wielkopolski i Zieloną Górę — oraz miasta. Jest ponad 150 miast z województwem, przybliżonym położeniem i ciekawostką.
+**Geografia – Polska** odpowiada się na mapie. Na łatwym i średnim poziomie dziecko stuka województwo. Zaczyna od największych miast (Warszawa, Kraków, Łódź, Wrocław, Poznań, Gdańsk, Szczecin), potem dochodzą stolice województw i coraz mniejsze miasta. Na trudnym i mistrzu stuka przybliżone miejsce; im wyżej, tym mniejszy dopuszczalny promień. Kujawsko-pomorskie ma dwie stolice: Bydgoszcz i Toruń. Lubuskie: Gorzów Wielkopolski i Zielona Góra.
+
+Kolekcje to prawdziwe zdjęcia (Wikimedia Commons, autor i licencja na karcie oraz w `CREDITS.md`). Obrazek profilu wybiera własną kolekcję: kot, pies, niedźwiedź, dinozaur, komputer, góra albo drzewo genealogiczne. Obrazek można zmienić później; poziom i XP zostają, a liczba odkrytych kart odpowiada liczbie awansów. Stary obrazek bez kolekcji (na przykład lis) prosi raz o nowy wybór.
 
 Przy zakładaniu profilu wybiera się **Dziecko** albo **Dorosły**. Dorosły od razu dostaje trudniejsze pytania: większe liczby, mniej znane kraje i miasta, słowa z kilkoma pułapkami. Rodzic nadal widzi wszystko. Znane kraje są na początku, a na poziomie Mistrz można trafić na każdy kraj z listy.
 

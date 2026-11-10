@@ -1348,8 +1348,19 @@ p {
   font-size: 0.78rem;
 }
 
-.breed-card.is-locked {
-  filter: grayscale(1) brightness(0.45);
+.breed-card.is-locked .breed-art {
+  filter: blur(14px) grayscale(1) brightness(0.28);
+}
+
+.breed-card.is-common { box-shadow: 0 0 0 2px #7ef6ff, 0 0 16px rgba(0, 240, 255, 0.35); }
+.breed-card.is-rare { box-shadow: 0 0 0 2px #c084fc, 0 0 16px rgba(192, 132, 252, 0.4); }
+.breed-card.is-epic { box-shadow: 0 0 0 2px #ff4fa3, 0 0 16px rgba(255, 79, 163, 0.4); }
+.breed-card.is-legend { box-shadow: 0 0 0 2px #ffe600, 0 0 18px rgba(255, 230, 0, 0.45); }
+
+.credit {
+  margin: 8px 0 0;
+  color: var(--ink-faint);
+  font-size: 0.75rem;
 }
 
 .breed-art {
@@ -1381,11 +1392,21 @@ p {
 }
 
 .pl-map {
-  width: min(100%, 340px);
+  width: min(100%, 420px);
   height: auto;
-  max-height: 34vh;
+  max-height: 52vh;
   display: block;
   margin: 0 auto;
+  touch-action: manipulation;
+}
+
+.quiz-map .pl-map {
+  max-height: 54vh;
+}
+
+.quiz-map .title-figure {
+  margin: 0 0 4px;
+  text-align: center;
 }
 
 .pl-region {
@@ -1397,6 +1418,11 @@ p {
 
 .pl-region.is-correct { fill: rgba(0, 255, 153, 0.45); }
 .pl-region.is-wrong { fill: rgba(255, 79, 163, 0.4); }
+
+.pl-dot { stroke: #fff; stroke-width: 2; }
+.pl-dot.is-answer { fill: #ffe600; }
+.pl-dot.is-hit { fill: #00ff99; }
+.pl-dot.is-miss { fill: #ff4fa3; }
 
 .pl-label {
   fill: #f7f8ff;

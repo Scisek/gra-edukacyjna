@@ -1,5 +1,4 @@
 import { el, plural } from "./dom.js";
-import { AVATARS } from "./avatars.js";
 import {
   app,
   closeModal,
@@ -7,6 +6,7 @@ import {
   nextQuestion,
   openModal,
   pickAnswer,
+  pickMapPoint,
   startRound,
   startTraining,
   switchTo,
@@ -23,19 +23,28 @@ import {
   profiles,
   resetMemory,
   resetProfile,
+  setAvatar,
   storageWorks,
   totalStars,
 } from "./storage.js";
 import { findModule, findSubject, subjects } from "./registry.js";
 import { isAdult, presentLevel } from "./audience.js";
 import { canPlayLevel, examTierOpen, resultHeadline, trainingOpen, unlockedIndex } from "./progress.js";
-import { avatarById, collectionForAvatar } from "./avatars.js";
-import { artFor, collectionById } from "./data/breeds.js";
+import { AVATARS, avatarById, avatarNeedsChoice, collectionForAvatar } from "./avatars.js";
+import { artFor, collectionById, rarityOf } from "./data/breeds.js";
+import { creditFor } from "./data/photo-credits.js";
 import { badgesOf, earnedBreeds, playerLevelOf, xpInto, xpToNext } from "./xp.js";
 import { topMisses } from "./review.js";
 import { countryById } from "./data/countries.js";
 import { VOIVODESHIPS } from "./data/poland.js";
+import { MAP_BOX, project, REGIONS, unproject } from "./data/poland-map.js";
 import { areaText, peopleText, sizeText } from "./geo-info.js";
+
+function creditLine(collectionId, breedId) {
+  const credit = creditFor(collectionId, breedId);
+  if (!credit) return null;
+  return el("p", { class: "credit", text: `Zdjęcie: ${credit.author}. ${credit.license}.` });
+}
 
 function avatarImg(id, className) {
   const avatar = avatarById(id);
@@ -92,6 +101,7 @@ function goBack() {
   }
   if (route.name === "levels") go("subject", { subjectId: route.subjectId });
   else if (route.name === "subject" || route.name === "collection") go("home");
+  else if (route.name === "theme") go("home");
   else if (route.name === "stats" || route.name === "create") go("profiles");
   else go("home");
 }
@@ -439,33 +449,67 @@ const MAP_LABEL = {
 
 function polandMap(figure, question, round) {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("viewBox", "0 0 390 450");
+  svg.setAttribute("viewBox", `0 0 ${MAP_BOX.width} ${MAP_BOX.height}`);
   svg.setAttribute("class", "pl-map");
   svg.setAttribute("role", "group");
-  svg.setAttribute("aria-label", "Mapa województw Polski");
-  for (const voi of VOIVODESHIPS) {
+  svg.setAttribute("aria-label", "Mapa Polski");
+  const pin = figure.mode === "pin";
+  for (const region of REGIONS) {
+    const voi = VOIVODESHIPS.find((item) => item.id === region.id);
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", voi.d);
-    const picked = round?.picked === voi.id;
-    const correct = round?.locked && question?.correctId === voi.id;
-    const wrong = round?.locked && picked && !correct;
+    path.setAttribute("d", region.d);
+    const correct = round?.locked && question?.correctId === region.id && !pin;
+    const wrong = round?.locked && !pin && round.picked === region.id && question?.correctId !== region.id;
     path.setAttribute("class", `pl-region${correct ? " is-correct" : ""}${wrong ? " is-wrong" : ""}`);
-    if (figure.tap && !round?.locked) path.addEventListener("click", () => pickAnswer(voi.id));
+    if (!pin && figure.tap && !round?.locked) path.addEventListener("click", () => pickAnswer(region.id));
     svg.append(path);
-    const at = MAP_LABEL[voi.id];
-    if (at) {
+    if (voi) {
+      const spot = project(voi.lon, voi.lat);
       const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      text.setAttribute("x", String(at[0]));
-      text.setAttribute("y", String(at[1]));
+      text.setAttribute("x", String(spot.x));
+      text.setAttribute("y", String(spot.y));
       text.setAttribute("class", "pl-label");
       text.textContent = voi.label;
       svg.append(text);
     }
   }
+  if (pin && !round?.locked) {
+    svg.addEventListener("click", (event) => {
+      const rect = svg.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * MAP_BOX.width;
+      const y = ((event.clientY - rect.top) / rect.height) * MAP_BOX.height;
+      const point = unproject(x, y);
+      pickMapPoint(point.lat, point.lon);
+    });
+  }
+  if (round?.locked && question?.pin) {
+    const answer = project(question.pin.lon, question.pin.lat);
+    const mark = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    mark.setAttribute("cx", String(answer.x));
+    mark.setAttribute("cy", String(answer.y));
+    mark.setAttribute("r", "7");
+    mark.setAttribute("class", "pl-dot is-answer");
+    svg.append(mark);
+    if (question.tap) {
+      const tap = project(question.tap.lon, question.tap.lat);
+      const guess = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      guess.setAttribute("cx", String(tap.x));
+      guess.setAttribute("cy", String(tap.y));
+      guess.setAttribute("r", "6");
+      guess.setAttribute("class", round.picked === question.correctId ? "pl-dot is-hit" : "pl-dot is-miss");
+      svg.append(guess);
+    }
+  }
+  const hint = pin
+    ? "Stuknij przybliżone miejsce na mapie."
+    : "Stuknij województwo.";
   return el("div", { class: "pl-map-wrap" }, [
     el("p", { class: "title-figure", text: figure.text }),
     svg,
-    figure.tap && !round?.locked ? el("p", { class: "hint", text: "Stuknij właściwe województwo." }) : null,
+    figure.tap && !round?.locked ? el("p", { class: "hint", text: hint }) : null,
+    round?.locked && question?.distanceKm != null
+      ? el("p", { class: "hint", text: `Odległość od celu: ${question.distanceKm} km. Cel mieści się w ${question.pin.radiusKm} km.` })
+      : null,
   ]);
 }
 
@@ -505,8 +549,8 @@ function viewQuiz() {
   const round = app.round;
   const profile = activeProfile();
   if (!round || !profile) return viewHome();
-  const quizClass = "quiz";
   const question = round.questions[round.index];
+  const quizClass = question?.figure?.type === "pl-map" ? "quiz quiz-map" : "quiz";
   const subject = findSubject(round.subjectId);
   const module = findModule(subject, round.moduleId);
   const hintLevel = round.hintLevels?.[round.index] || 0;
@@ -644,7 +688,7 @@ function viewCollection() {
       const open = owned.has(breed.id);
       return el("button", {
         type: "button",
-        class: open ? "breed-card" : "breed-card is-locked",
+        class: `breed-card is-${rarityOf(collection.breeds.indexOf(breed), collection.breeds.length)}${open ? "" : " is-locked"}`,
         onClick: () => {
           if (!open) return;
           app.breed = breed.id;
@@ -662,7 +706,13 @@ function viewCollection() {
       el("p", { text: `${collection.labels?.size || "Wielkość"}: ${picked.size}` }),
       el("p", { text: `${collection.labels?.character || "Charakter"}: ${picked.character}` }),
       el("p", { class: "fact-card__fact", text: picked.fact }),
+      creditLine(collection.id, picked.id),
     ]) : null,
+    el("button", {
+      type: "button",
+      class: "btn btn-ghost btn-block",
+      onClick: () => go("theme", { profileId: profile.id }),
+    }, "Zmień obrazek"),
     el("h2", { text: "Odznaki" }),
     badges.length
       ? el("ul", { class: "badge-list" }, badges.map((badge) => el("li", {}, [
@@ -704,6 +754,11 @@ function viewStats() {
       : el("p", { class: "hint", text: "Tu pojawią się kraje, słowa i działania, które wracają najczęściej." }),
     el("div", { class: "stack" }, [
       el("p", { class: "hint", text: "Postępy to gwiazdki, poziomy, XP i kolekcja. Pamięć odpowiedzi to tylko to, które pytania wracają częściej." }),
+      el("button", {
+        type: "button",
+        class: "btn btn-ghost btn-block",
+        onClick: () => go("theme", { profileId: profile.id }),
+      }, "Zmień obrazek"),
       el("button", {
         type: "button",
         class: "btn btn-ghost btn-block",
@@ -762,7 +817,36 @@ function modal() {
   ]);
 }
 
+function viewTheme() {
+  const profile = profiles().find((item) => item.id === app.route.profileId) || activeProfile();
+  if (!profile || isTestProfile(profile)) return viewProfiles();
+  const forced = avatarNeedsChoice(profile.avatar);
+  return screen([
+    forced ? null : back("Wróć", () => go(app.route.from || "home")),
+    el("h1", { text: forced ? "Wybierz nowy obrazek" : "Zmień obrazek" }),
+    el("p", { class: "lede", text: forced
+      ? `${profile.name}, ten obrazek nie ma już własnej kolekcji. Wybierz nowy. Poziom i XP zostają. Karty kolekcji dopasują się do liczby awansów.`
+      : "Nowy obrazek zmienia kolekcję. Poziom i XP zostają. Odkryte karty to tyle, ile masz awansów." }),
+    el("div", { class: "avatar-grid" }, AVATARS.map((avatar) => el("button", {
+      type: "button",
+      class: "avatar-pick",
+      onClick: () => {
+        setAvatar(profile.id, avatar.id);
+        go("home");
+      },
+    }, [
+      el("img", { src: avatar.src, alt: "" }),
+      el("span", { text: avatar.label }),
+      el("small", { text: avatar.collects }),
+    ]))),
+  ], "screen--narrow");
+}
+
 export function renderApp() {
+  const profile = activeProfile();
+  if (profile && !isTestProfile(profile) && avatarNeedsChoice(profile.avatar) && app.route.name !== "theme") {
+    app.route = { name: "theme", profileId: profile.id, forced: true };
+  }
   const route = app.route.name;
   let main = viewHome();
   if (route === "profiles") main = viewProfiles();
@@ -773,6 +857,7 @@ export function renderApp() {
   else if (route === "quiz") main = viewQuiz();
   else if (route === "results") main = viewResults();
   else if (route === "collection") main = viewCollection();
+  else if (route === "theme") main = viewTheme();
   else if (route === "stats") main = viewStats();
   const shell = el("div", { class: "shell" }, [header(), main]);
   const dialog = modal();

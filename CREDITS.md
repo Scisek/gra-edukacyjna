@@ -1,0 +1,60 @@
+# Zdjęcia kolekcji
+
+Zdjęcia pochodzą z Wikimedia Commons. Na karcie w grze jest autor i licencja.
+
+- `kot-brytyjski` — File:British Shorthair.jpg — Nicole-Koehler — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File%3ABritish_Shorthair.jpg
+- `kot-perski` — File:A white persian cat (4985430014).jpg — kitty.green66 — CC BY-SA 2.0 — https://commons.wikimedia.org/wiki/File%3AA_white_persian_cat_%284985430014%29.jpg
+- `kot-maine` — File:Karin Maine Coon.jpg — Takashi Hososhima — CC BY-SA 2.0 — https://commons.wikimedia.org/wiki/File%3AKarin_Maine_Coon.jpg
+- `kot-syjamski` — File:Siamese cat, chocolate point.jpg — Felinlove — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3ASiamese_cat%2C_chocolate_point.jpg
+- `kot-ragdoll` — File:Gato Ragdoll BreedingCat.jpg — Cgomez766 — CC0 — https://commons.wikimedia.org/wiki/File%3AGato_Ragdoll_BreedingCat.jpg
+- `kot-norweski` — File:Black Norwegian Forest cat kitten.jpg — NeoMeesje — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3ABlack_Norwegian_Forest_cat_kitten.jpg
+- `kot-sfinks` — File:1 adult cat Sphynx. img 047.jpg — Dmitry Makeev — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3A1_adult_cat_Sphynx._img_047.jpg
+- `kot-bengalski` — File:Bengal cat 1y.jpg — Abdeaitali — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3ABengal_cat_1y.jpg
+- `pies-labrador` — File:Labrador Retriever.jpg — Marco Ponepal — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File%3ALabrador_Retriever.jpg
+- `pies-golden` — File:Golden Retriever standing Tucker.jpg — Edward from boston, usa — CC BY 2.0 — https://commons.wikimedia.org/wiki/File%3AGolden_Retriever_standing_Tucker.jpg
+- `pies-owczarek` — File:20110425 German Shepherd Dog 8505.jpg — Jakub Hałun — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3A20110425_German_Shepherd_Dog_8505.jpg
+- `pies-beagle` — File:A Beagle sitting next to dog food.jpg — Slyronit — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3AA_Beagle_sitting_next_to_dog_food.jpg
+- `pies-jamnik` — File:Teckel.jpg — No machine-readable author provided. N6~commonswiki assumed (based on copyright claims). — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File%3ATeckel.jpg
+- `pies-husky` — File:3217-siberian-husky-dog (20314366700).jpg — localpups — CC BY 2.0 — https://commons.wikimedia.org/wiki/File%3A3217-siberian-husky-dog_%2820314366700%29.jpg
+- `pies-mops` — File:A PUG dog.jpg — Nancy Wong — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3AA_PUG_dog.jpg
+- `pies-shiba` — File:A Shiba Inu.jpg — Nancy Wong — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3AA_Shiba_Inu.jpg
+- `niedzwiedz-brunatny` — File:Brown bear (Ursus arctos arctos) running.jpg — Malene Thyssen — CC BY 2.5 — https://commons.wikimedia.org/wiki/File%3ABrown_bear_%28Ursus_arctos_arctos%29_running.jpg
+- `niedzwiedz-polarny` — File:Polar Bear - Alaska (cropped).jpg — Alan Wilson — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File%3APolar_Bear_-_Alaska_%28cropped%29.jpg
+- `niedzwiedz-czarny` — File:American black bear Gros Mornе NFL.jpg — Mykola Swarnyk — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File%3AAmerican_black_bear_Gros_Morn%D0%B5_NFL.jpg
+- `niedzwiedz-himalajski` — File:Asian Black Bear Ursus thibetanus by Dr. Raju Kasambe 01.jpg — Dr. Raju Kasambe — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3AAsian_Black_Bear_Ursus_thibetanus_by_Dr._Raju_Kasambe_01.jpg
+- `niedzwiedz-okularowy` — File:Spectacled Bear - Houston Zoo.jpg — en:User:Cburnett — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File%3ASpectacled_Bear_-_Houston_Zoo.jpg
+- `niedzwiedz-malajski` — File:Helarctos malayanus, Sun bear - Kaeng Krachan National Park (50770053781).jpg — Rushen — CC BY-SA 2.0 — https://commons.wikimedia.org/wiki/File%3AHelarctos_malayanus%2C_Sun_bear_-_Kaeng_Krachan_National_Park_%2850770053781%29.jpg
+- `niedzwiedz-wargacz` — File:077 Sloth bear in Ranthambore National Park Photo by Giles Laurent.jpg — Giles Laurent — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3A077_Sloth_bear_in_Ranthambore_National_Park_Photo_by_Giles_Laurent.jpg
+- `niedzwiedz-panda` — File:Ailuropoda melanoleuca (Panda géant) - 445.jpg — Another one of my pictures:[[File:|150x150px]] This photograph was taken by Medium69 (William Crochot) and released unde — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3AAiluropoda_melanoleuca_%28Panda_g%C3%A9ant%29_-_445.jpg
+- `dino-tyranozaur` — File:Newcastle Tyrannosaurus rex (10).JPG — Storye book — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3ANewcastle_Tyrannosaurus_rex_%2810%29.JPG
+- `dino-triceratops` — File:A Triceratops skeleton.jpg — Vanadium Erbium — CC BY 4.0 — https://commons.wikimedia.org/wiki/File%3AA_Triceratops_skeleton.jpg
+- `dino-stegozaur` — File:American museum of natural history Stegosaurus 01.jpg — Andreone93 — CC BY 4.0 — https://commons.wikimedia.org/wiki/File%3AAmerican_museum_of_natural_history_Stegosaurus_01.jpg
+- `dino-brachiozaur` — File:Berlin - Museum für Naturkunde - Brachiosaurus brancai.jpg — Raimond Spekking — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3ABerlin_-_Museum_f%C3%BCr_Naturkunde_-_Brachiosaurus_brancai.jpg
+- `dino-welociraptor` — File:Velociraptor Fighting Dinosaur.jpg — Thomas Vandenberghe from Leuven, Belgium — CC BY-SA 2.0 — https://commons.wikimedia.org/wiki/File%3AVelociraptor_Fighting_Dinosaur.jpg
+- `dino-ankylozaur` — File:Ankylosaurus magniventris.jpg — Ghedoghedo — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File%3AAnkylosaurus_magniventris.jpg
+- `dino-spinozaur` — File:Spinosaurus swimming.jpg — Mike Bowler from Canada — CC BY 2.0 — https://commons.wikimedia.org/wiki/File%3ASpinosaurus_swimming.jpg
+- `dino-diplodok` — File:Diplodocus Carnegii skeleton (foreground) in Museum für Naturkunde Berlin 0876.jpg — Dosseman — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3ADiplodocus_Carnegii_skeleton_%28foreground%29_in_Museum_f%C3%BCr_Naturkunde_Berlin_0876.jpg
+- `komputer-cpu8088` — File:I8088.jpg — nieznany — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File%3AI8088.jpg
+- `komputer-dyskietka` — File:Floppy Disk Drives 8 5 3.jpg — Swtpc6800 en:User:Swtpc6800 Michael Holley — Public domain — https://commons.wikimedia.org/wiki/File%3AFloppy_Disk_Drives_8_5_3.jpg
+- `komputer-hdd` — File:3.5 inch hard disk drive, side view.jpg — Gunnar Wolf — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3A3.5_inch_hard_disk_drive%2C_side_view.jpg
+- `komputer-ram` — File:16 GiB-DDR4-RAM-Riegel RAM019FIX Small Crop 90 PCNT.png — PantheraLeo1359531 — CC BY 4.0 — https://commons.wikimedia.org/wiki/File%3A16_GiB-DDR4-RAM-Riegel_RAM019FIX_Small_Crop_90_PCNT.png
+- `komputer-plyta` — File:Computer-motherboard.jpg — Marcin Wieclaw (pcsite.co.uk) — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3AComputer-motherboard.jpg
+- `komputer-ssd` — File:2017 Dysk SSD Plextor M8Pe(Y) 256GB.jpg — Jacek Halicki — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3A2017_Dysk_SSD_Plextor_M8Pe%28Y%29_256GB.jpg
+- `komputer-gpu` — File:ASUS NVIDIA GeForce 210 silent graphics card with HDMI.JPG — Joydeep — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File%3AASUS_NVIDIA_GeForce_210_silent_graphics_card_with_HDMI.JPG
+- `gory-gubalowka` — File:Tatry Widok z Gubałówki 2022-08-25 01.jpg — Agnieszka Kwiecień, Nova — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3ATatry_Widok_z_Guba%C5%82%C3%B3wki_2022-08-25_01.jpg
+- `gory-sniezka` — File:Chapel of Saint Lawrence, Śnieżka (Schneekoppe, Sněžka).jpg — Pudelek — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3AChapel_of_Saint_Lawrence%2C_%C5%9Anie%C5%BCka_%28Schneekoppe%2C_Sn%C4%9B%C5%BEka%29.jpg
+- `gory-rysy` — File:Rysy, szczyt.jpg — Andrzej Makarczuk, — CC BY-SA 2.5 — https://commons.wikimedia.org/wiki/File%3ARysy%2C_szczyt.jpg
+- `gory-gerlach` — File:Gerlachovsky peak, High Tatras, Slovskia.jpg — Martingazak — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3AGerlachovsky_peak%2C_High_Tatras%2C_Slovskia.jpg
+- `gory-montblanc` — File:Mont Blanc from Aiguille du Midi.jpg — Kaikanne — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File%3AMont_Blanc_from_Aiguille_du_Midi.jpg
+- `gory-kilimandzaro` — File:Uhuru Peak Mount Kilimanjaro Tanzania.jpg — Altezzatravel — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3AUhuru_Peak_Mount_Kilimanjaro_Tanzania.jpg
+- `gory-k2` — File:K2 8611.jpg — Kogo — GFDL — https://commons.wikimedia.org/wiki/File%3AK2_8611.jpg
+- `gory-everest` — File:20110810 North Face of Everest Tibet China Panoramic.jpg — User:Ggia — CC BY-SA 3.0 — https://commons.wikimedia.org/wiki/File%3A20110810_North_Face_of_Everest_Tibet_China_Panoramic.jpg
+- `genealog-chrzest` — File:Hexenbraut 1586 DA Taufregister 1575-1631 Auszug bearbeitet.jpg — Pfarrer der Stadtkirche Darmstadt, 1586 — Public domain — https://commons.wikimedia.org/wiki/File%3AHexenbraut_1586_DA_Taufregister_1575-1631_Auszug_bearbeitet.jpg
+- `genealog-slub` — File:Harting Parish Register extract - 3 soldiers buried 24 November 1643.png — Unknown authorUnknown author — Public domain — https://commons.wikimedia.org/wiki/File%3AHarting_Parish_Register_extract_-_3_soldiers_buried_24_November_1643.png
+- `genealog-urodzenie` — File:Extract from the birth certificate of S. V. Lukyanov in 1873 - signed by John Sergiev (Kronshtadtsky) in 1882 (fragment).png — Scanning &amp; page-proofs V. Turchaninov, scan date - 2021 year. — Public domain — https://commons.wikimedia.org/wiki/File%3AExtract_from_the_birth_certificate_of_S._V._Lukyanov_in_1873_-_signed_by_John_Sergiev_%28Kronshtadtsky%29_in_1882_%28fragment%29.png
+- `genealog-zgon` — File:1853 deaths in Suffolk County Historical Society Register, volume 14.png — Unknown authorUnknown author — Public domain — https://commons.wikimedia.org/wiki/File%3A1853_deaths_in_Suffolk_County_Historical_Society_Register%2C_volume_14.png
+- `genealog-ksiega` — File:Kirchenbuch.jpg — Unknown author Unknown author — Public domain — https://commons.wikimedia.org/wiki/File%3AKirchenbuch.jpg
+- `genealog-spis` — File:U.S. Census Mortality Schedule for Indiana, 1860, Counties A-L - DPLA - 35e30120de0bee47c03336540ae8bdd9 (page 106).jpg — United States Census Bureau — Public domain — https://commons.wikimedia.org/wiki/File%3AU.S._Census_Mortality_Schedule_for_Indiana%2C_1860%2C_Counties_A-L_-_DPLA_-_35e30120de0bee47c03336540ae8bdd9_%28page_106%29.jpg
+- `genealog-wywod` — File:Ahnentafel.jpg — GutberletHechelmannskirchen — Public domain — https://commons.wikimedia.org/wiki/File%3AAhnentafel.jpg
+- `genealog-drzewo` — File:Ajilesoro Family Tree(SAKA OLADELE AJILESORO).png — WaleBadiora — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File%3AAjilesoro_Family_Tree%28SAKA_OLADELE_AJILESORO%29.png
+- `komputer-cpu` — File:4th Generation Intel® Core™ i7 Processor Front.jpg — Intel in Deutschland — CC BY-SA 2.0 — https://commons.wikimedia.org/wiki/File%3A4th_Generation_Intel%C2%AE_Core%E2%84%A2_i7_Processor_Front.jpg

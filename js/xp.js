@@ -4,7 +4,8 @@ import { isTestProfile } from "./storage.js";
 import { subjects } from "./registry.js";
 
 function activeCollection(profile) {
-  return collectionById(collectionIdFor(profile?.avatar));
+  const id = collectionIdFor(profile?.avatar);
+  return id ? collectionById(id) : null;
 }
 
 const TIER_MULT = { 1: 1, 2: 3, 3: 6, 4: 10 };
@@ -53,6 +54,7 @@ export function nextBreed(profile, collectionId) {
 
 function grantBreed(profile) {
   const collection = activeCollection(profile);
+  if (!collection) return null;
   const breed = nextBreed(profile, collection.id);
   if (!breed || isTestProfile(profile)) return null;
   bag(profile, collection.id).push(breed.id);
@@ -106,6 +108,7 @@ export function badgesOf(profile) {
 export function maybeAwardBadges(profile, subject, module) {
   if (!module || module.role !== "egzamin" || isTestProfile(profile)) return [];
   const collection = activeCollection(profile);
+  if (!collection) return [];
   profile.badges = profile.badges || [];
   const owned = new Set(profile.badges.map((badge) => badge.id));
   const fresh = [];

@@ -5,6 +5,14 @@ function item(id, name, origin, size, character, fact) {
   return { id, name, origin, size, character, fact };
 }
 
+export function rarityOf(index, total) {
+  const t = index / Math.max(1, total - 1);
+  if (t < 0.25) return "common";
+  if (t < 0.55) return "rare";
+  if (t < 0.8) return "epic";
+  return "legend";
+}
+
 export const COLLECTIONS = {
   kot: {
     id: "kot",
@@ -86,6 +94,22 @@ export const COLLECTIONS = {
       item("everest", "Mount Everest", "Himalaje, granica Nepalu i Chin", "około 8849 m n.p.m.", "najwyższy szczyt Ziemi", "Pomiar z 2020 roku podał 8848,86 m. Na szczycie jest bardzo mało tlenu."),
     ],
   },
+  niedzwiedz: {
+    id: "niedzwiedz",
+    title: "Niedźwiedzie",
+    labels: { origin: "Gdzie żyje", size: "Wielkość", character: "Jakie jest" },
+    badges: ["Opiekun niedźwiedzia", "Tropiciel", "Badacz niedźwiedzi", "Profesor niedźwiedzi"],
+    breeds: [
+      item("brunatny", "Niedźwiedź brunatny", "Europa, Azja i Ameryka Północna", "duży, w Polsce bardzo rzadki", "ostrożny wszystkożerca", "W Polsce żyje głównie w Bieszczadach i w Tatrach. Zimą zapada w sen."),
+      item("polarny", "Niedźwiedź polarny", "Arktyka", "jeden z największych niedźwiedzi", "poluje na foki", "Futro jest przezroczyste, a skóra czarna. Dobrze pływa w lodowatej wodzie."),
+      item("czarny", "Niedźwiedź czarny", "Ameryka Północna", "mniejszy od brunatnego", "wspina się na drzewa", "Baribal bywa czarny, ale zdarzają się też brązowe osobniki. Często mieszka w lasach."),
+      item("himalajski", "Niedźwiedź himalajski", "Azja, od Iranu po Japonię", "średni", "nocny, z białą łatą na piersi", "Biała plama na piersi przypomina półksiężyc. Wiele czasu spędza na drzewach."),
+      item("okularowy", "Niedźwiedź andyjski", "Andy w Ameryce Południowej", "średni", "płochliwy roślinożerca", "Jasne obwódki wokół oczu wyglądają jak okulary. To jedyny niedźwiedź Ameryki Południowej."),
+      item("malajski", "Niedźwiedź malajski", "lasy południowo-wschodniej Azji", "najmniejszy niedźwiedź", "zjada miód i owady", "Ma bardzo długi język, którym wyciąga miód i owady z dziupli."),
+      item("wargacz", "Niedźwiedź wargacz", "Indie i okolice", "średni", "lubi termity", "Długi pysk i wargi pomagają mu wysysać termity z kopców."),
+      item("panda", "Panda wielka", "góry w środkowych Chinach", "duża i krępa", "je prawie sam bambus", "Należy do niedźwiedzi. Zjada wiele kilogramów bambusa dziennie."),
+    ],
+  },
   genealog: {
     id: "genealog",
     title: "Genealogia",
@@ -113,5 +137,5 @@ export function breedById(collectionId, breedId) {
 }
 
 export function artFor(collectionId, breedId) {
-  return `assets/breeds/${collectionId}-${breedId}.svg`;
+  return `assets/photos/${collectionId}-${breedId}.webp`;
 }

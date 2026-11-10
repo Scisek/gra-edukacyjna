@@ -216,6 +216,24 @@ export function pickAnswer(id) {
   lockAnswer(id, false);
 }
 
+function distanceKm(lat1, lon1, lat2, lon2) {
+  const rad = Math.PI / 180;
+  const dLat = (lat2 - lat1) * rad;
+  const dLon = (lon2 - lon1) * rad;
+  const a = Math.sin(dLat / 2) ** 2
+    + Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(dLon / 2) ** 2;
+  return 6371 * 2 * Math.asin(Math.min(1, Math.sqrt(a)));
+}
+
+export function pickMapPoint(lat, lon) {
+  const question = currentQuestion();
+  if (!question?.pin || app.round?.locked) return;
+  const km = distanceKm(lat, lon, question.pin.lat, question.pin.lon);
+  question.distanceKm = Math.round(km);
+  question.tap = { lat, lon };
+  lockAnswer(km <= question.pin.radiusKm ? question.correctId : "miss", false);
+}
+
 export function useHint() {
   const round = app.round;
   const question = currentQuestion();
