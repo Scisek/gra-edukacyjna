@@ -1157,6 +1157,36 @@ p {
   margin-top: 4px;
 }
 
+.fact-card strong {
+  font-weight: 700;
+}
+
+.sw-update {
+  position: fixed;
+  z-index: 20;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #171d38;
+  color: var(--ink);
+  border: 1px solid rgba(0, 240, 255, 0.45);
+  box-shadow: var(--shadow);
+}
+
+.sw-update[hidden] {
+  display: none;
+}
+
+.sw-update p {
+  margin: 0;
+}
+
 @media (max-width: 480px) {
   .topbar__inner {
     padding: 8px 12px;
@@ -1483,16 +1513,16 @@ p {
 }
 
 .pl-map {
-  width: min(100%, 420px);
+  width: min(100%, 420px, calc(52vh * 360 / 400));
   height: auto;
-  max-height: 52vh;
+  aspect-ratio: 360 / 400;
   display: block;
   margin: 0 auto;
   touch-action: manipulation;
 }
 
 .quiz-map .pl-map {
-  max-height: 54vh;
+  width: min(100%, 420px, calc(54vh * 360 / 400));
 }
 
 .quiz-map .title-figure {

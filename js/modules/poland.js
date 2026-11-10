@@ -14,23 +14,27 @@ function pool(level) {
   const step = Math.min(4, Math.max(1, level.step || 1)) - 1;
   const tier = level.tier || 1;
   if (level.adult) {
-    if (tier <= 1) return cities.filter((city) => city.pop <= 160000 && city.pop >= 25000);
-    if (tier === 2) return cities.filter((city) => city.pop <= 90000);
-    return cities.filter((city) => city.pop < 200000);
+    if (tier <= 1) return cities.filter((city) => city.pop >= 180000);
+    if (tier === 2) return cities.filter((city) => city.pop >= 80000);
+    if (tier === 3) return cities.filter((city) => city.pop >= 20000);
+    return cities.filter((city) => city.pop < 120000);
   }
   const min = MIN_POP[tier][step];
   return cities.filter((city) => city.pop >= min);
 }
 
 function usePin(level) {
-  if (level.adult) return (level.tier || 1) >= 2;
   return (level.tier || 1) >= 3;
 }
 
 function radiusKm(level) {
   const tier = level.tier || 1;
   const step = level.step || 1;
-  if (level.adult) return [0, 40, 28, 18][Math.min(3, tier - 1)] || 18;
+  if (level.adult) {
+    if (tier <= 2) return 90;
+    if (tier === 3) return 60;
+    return 26;
+  }
   if (tier >= 4) return step >= 3 ? 22 : 32;
   return 48;
 }
@@ -118,7 +122,7 @@ function questionCapital(level, used, memory) {
   let bag = CAPITALS.filter((task) => !used.has(task.id));
   if (!bag.length) bag = CAPITALS;
   const dual = bag.filter((task) => task.id.includes("-"));
-  if ((level.adult || level.tier >= 3) && dual.length && Math.random() < 0.65) bag = dual;
+  if ((level.tier || 1) >= 3 && dual.length && Math.random() < 0.65) bag = dual;
   const task = weightedPick(bag, (item) => recallWeight(memory?.[`plcap:${item.id}`]));
   const prompt = usePin(level) ? task.prompt.replace("Gdzie", "Stuknij, gdzie") : task.prompt;
   return mapQuestion(level, used, memory, task.place, prompt, task.note, `plcap:${task.id}`);

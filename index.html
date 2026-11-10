@@ -5,8 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b0d19">
   <meta name="description" content="Skarby wiedzy — spokojna gra edukacyjna dla dzieci: geografia, ortografia i matematyka.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Skarby wiedzy">
   <title>Skarby wiedzy</title>
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/art/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
   <link rel="stylesheet" href="css/fonts.css">
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/app.css">
@@ -17,6 +23,24 @@
   <noscript>
     <p class="noscript">Ta gra potrzebuje włączonego JavaScriptu w przeglądarce.</p>
   </noscript>
+  <div id="sw-update" class="sw-update" hidden>
+    <p>Jest nowa wersja gry.</p>
+    <button type="button" id="sw-reload">Odśwież</button>
+  </div>
   <script type="module" src="js/main.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      const hadController = Boolean(navigator.serviceWorker.controller);
+      navigator.serviceWorker.register("sw.js");
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (!hadController) return;
+        const banner = document.getElementById("sw-update");
+        if (banner) banner.hidden = false;
+      });
+      document.getElementById("sw-reload")?.addEventListener("click", () => {
+        window.location.reload();
+      });
+    }
+  </script>
 </body>
 </html>

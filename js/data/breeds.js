@@ -18,6 +18,7 @@ export const COLLECTIONS = {
   kot: {
     id: "kot",
     title: "Koty",
+    menu: "Kolekcja kotów",
     labels: { origin: "Pochodzenie", size: "Wielkość", character: "Charakter" },
     badges: ["Właściciel kota", "Trener kotów", "Behawiorysta kotów", "Profesor kociej nauki"],
     breeds: [
@@ -42,6 +43,7 @@ export const COLLECTIONS = {
   pies: {
     id: "pies",
     title: "Psy",
+    menu: "Kolekcja psów",
     labels: { origin: "Pochodzenie", size: "Wielkość", character: "Charakter" },
     badges: ["Właściciel psa", "Trener psów", "Behawiorysta psów", "Profesor psiej nauki"],
     breeds: [
@@ -66,6 +68,7 @@ export const COLLECTIONS = {
   dino: {
     id: "dino",
     title: "Dinozaury",
+    menu: "Kolekcja dinozaurów",
     labels: { origin: "Gdzie żył", size: "Wielkość", character: "Jadł" },
     badges: ["Młody paleontolog", "Odkrywca skamieniałości", "Badacz mezozoiku", "Profesor dinozaurów"],
     breeds: [
@@ -90,6 +93,7 @@ export const COLLECTIONS = {
   komputer: {
     id: "komputer",
     title: "Komputery",
+    menu: "Kolekcja komputerów",
     labels: { origin: "Epoka", size: "Rola", character: "Jak działa" },
     badges: ["Młody informatyk", "Serwisant", "Inżynier sprzętu", "Architekt komputerów"],
     breeds: [
@@ -114,6 +118,7 @@ export const COLLECTIONS = {
   gory: {
     id: "gory",
     title: "Szczyty",
+    menu: "Kolekcja szczytów",
     labels: { origin: "Gdzie stoi", size: "Wysokość", character: "Jaki jest" },
     badges: ["Turysta", "Górołaz", "Zdobywca szczytów", "Himalaista"],
     breeds: [
@@ -138,6 +143,7 @@ export const COLLECTIONS = {
   niedzwiedz: {
     id: "niedzwiedz",
     title: "Niedźwiedzie",
+    menu: "Kolekcja niedźwiedzi",
     labels: { origin: "Gdzie żyje", size: "Wielkość", character: "Jakie jest" },
     badges: ["Opiekun niedźwiedzia", "Tropiciel", "Badacz niedźwiedzi", "Profesor niedźwiedzi"],
     breeds: [
@@ -162,6 +168,7 @@ export const COLLECTIONS = {
   genealog: {
     id: "genealog",
     title: "Genealogia",
+    menu: "Kolekcja genealoga",
     labels: { origin: "Skąd to znamy", size: "Co zawiera", character: "Po co to rodzinie" },
     badges: ["Młody genealog", "Badacz metryk", "Historyk rodziny", "Mistrz drzewa rodowego"],
     breeds: [
@@ -183,10 +190,64 @@ export const COLLECTIONS = {
       item("drzewo", "Pełne drzewo rodu", "rysunek rodziny", "osoby połączone liniami pokrewieństwa", "cała familia na jednym obrazku", "Może rosnąć w górę, ku przodkom, albo w dół, ku dzieciom. Linie pokazują, kto jest czyim rodzicem."),
     ],
   },
+  kwiat: {
+    id: "kwiat",
+    title: "Kwiaty",
+    menu: "Kolekcja kwiatów",
+    labels: { origin: "Gdzie rośnie", size: "Wielkość", character: "Jaki jest" },
+    badges: ["Ogrodnik", "Florysta", "Botanik", "Mistrz kwiatów"],
+    breeds: [
+      item("stokrotka", "Stokrotka", "łąki i trawniki Europy, także cała Polska", "mała", "skromna i pospolita", "Rośnie na trawnikach i łąkach. Dzieci często plotą z niej wianki."),
+      item("tulipan", "Tulipan", "pochodzi z Azji Środkowej, słynie z Holandii", "średni", "wiosenny", "Cebulka przez zimę śpi w ziemi, a na wiosnę wypuszcza kwiat."),
+      item("roza", "Róża", "ogrody całego świata; dzikie róże rosną też w Polsce", "średnia lub duża", "pachnąca", "Kolce chronią kwiat przed zjedzeniem. Zapach róż znano już w starożytności."),
+      item("slonecznik", "Słonecznik", "pochodzi z Ameryki Północnej, uprawiany też w Polsce", "duży", "słoneczny", "Kwiatostan obraca się za słońcem. Z nasion robi się olej i smaczne pestki."),
+      item("mak", "Mak polny", "pola i pobocza Europy, także Polska", "średni", "delikatny", "Płatki są cienkie jak bibułka i szybko opadają."),
+      item("pelargonia", "Pelargonia", "pochodzi z południowej Afryki, popularna na polskich balkonach", "średnia", "balkonna", "Często stoi w doniczkach na balkonach. Liście mają czasem ciemniejszy pasek jak podkowę."),
+      item("begonia", "Begonia koralowa", "tropikalne lasy Brazylii", "średnia", "nakrapiana", "Na liściach ma srebrne kropki, a spód liścia jest często czerwony."),
+      item("fiolet", "Fiołek afrykański", "góry Tanzanii i Kenii", "mały", "aksamitny", "Liście są miękkie i owłosione. Lubi jasne miejsce, ale nie palące słońce."),
+      item("skrzydlokwiat", "Skrzydłokwiat", "tropikalne lasy Ameryki", "średni", "o białym „skrzydle”", "Biały liść wokół kwiatostanu wygląda jak skrzydło albo żagiel. Dobrze rośnie w domu."),
+      item("pothos", "Epipremnum (pothos)", "wyspy Oceanii i Azja Południowo-Wschodnia", "pnące", "łatwe w uprawie", "To jedna z najłatwiejszych roślin doniczkowych. Pnącza mogą mieć wiele metrów."),
+      item("fikus", "Fikus lirnolistny", "lasy tropikalnej Afryki Zachodniej", "duży", "o liściach jak skrzypce", "Wielkie liście mają kształt skrzypiec albo gitary. W naturze bywa ogromnym drzewem."),
+      item("monstera", "Monstera", "tropikalne lasy Ameryki Środkowej", "duża", "o dziurawych liściach", "Dziury i wcięcia w liściach pomagają przetrwać wiatrom i ulewom w dżungli."),
+      item("kaladium", "Kaladium", "tropikalna Ameryka Południowa", "średnie", "o kolorowych liściach", "Najładniejsze są liście, nie kwiaty: różowe, białe i zielone jak malowane."),
+      item("alokazja", "Alokazja", "tropikalna Azja", "średnia lub duża", "o liściach jak strzały", "Grube białe nerwy na ciemnym liściu wyglądają jak narysowane kredą."),
+      item("storczyk", "Storczyk falenopsis", "tropikalna Azja i Oceania", "średni", "elegancki", "Kwiaty przypominają ćmy w locie, stąd nazwa falenopsis. Może kwitnąć wiele tygodni."),
+      item("strelicja", "Strelicja (rajski ptak)", "południowa Afryka", "duża", "jak tropikalny ptak", "Pomarańczowy i niebieski kwiat wygląda jak głowa rajskiego ptaka."),
+    ],
+  },
+  owoc: {
+    id: "owoc",
+    title: "Owoce",
+    menu: "Kolekcja owoców",
+    labels: { origin: "Skąd jest", size: "Wielkość", character: "Jaki jest" },
+    badges: ["Sadownik", "Smakosz", "Znawca owoców", "Mistrz owoców"],
+    breeds: [
+      item("jablko", "Jabłko", "sady umiarkowanego świata, także cała Polska", "średnie", "chrupiące, słodko-kwaśne", "W Polsce rośnie setki odmian. Pestki siedzą w pięciu przegródkach, które na przekroju tworzą gwiazdkę."),
+      item("gruszka", "Gruszka", "sady Europy i Azji, także Polska", "średnia", "słodka i soczysta", "Dojrzewa od środka. Najsmaczniejsza jest wtedy, gdy szyjka trochę zmięknie."),
+      item("sliwka", "Śliwka", "sady Europy i Azji, także Polska", "średnia", "słodko-kwaśna", "Siny nalot na skórce to naturalny wosk, który chroni owoc. Z węgierek robi się powidła."),
+      item("truskawka", "Truskawka", "uprawiana w całej Polsce; przodkowie z Ameryk", "mała", "słodka i pachnąca", "To owoc pozorny: prawdziwe owoce to te małe żółte „pestki” na powierzchni."),
+      item("wisnia", "Wiśnia", "sady Europy, także Polska", "mała", "kwaskowata", "Jest kwaśniejsza od czereśni. Z wiśni robi się kompot i sok."),
+      item("malina", "Malina", "lasy i ogrody Europy, także Polska", "mała", "słodka i aromatyczna", "Owoc składa się z wielu malutkich kuleczek. Łatwo schodzi z dna, bo w środku jest pusty."),
+      item("borowka", "Borówka", "pochodzi z Ameryki Północnej, uprawiana też w Polsce", "mała", "słodka, ciemnoniebieska", "Siny nalot to naturalny wosk. Sok mocno barwi język i palce."),
+      item("pomarancza", "Pomarańcza", "uprawiana w ciepłych krajach, na przykład w Hiszpanii i Włoszech", "średnia", "słodka i soczysta", "Skórka pachnie olejkami. Owoc jest pełen witaminy C, która pomaga nie chorować."),
+      item("banan", "Banan", "uprawiany w tropikach, na przykład w Ameryce Środkowej i Azji", "średni", "słodki i miękki", "Rośnie na wielkiej roślinie, która wygląda jak drzewo, ale jest olbrzymim ziołem. Kiście zwisają w dół."),
+      item("kiwi", "Kiwi", "pochodzi z Chin, uprawiane też w Nowej Zelandii i we Włoszech", "małe", "kwaskowato-słodkie", "Pod brązową skórką kryje się zielony środek z wianuszkiem czarnych pestek."),
+      item("ananas", "Ananas", "pochodzi z Ameryki Południowej, uprawiany w tropikach", "duży", "słodko-kwaśny", "Owoc składa się z wielu zrośniętych jagód. Koronę liści na górze można czasem ukorzenić."),
+      item("mango", "Mango", "pochodzi z Indii i Azji Południowo-Wschodniej", "duże", "słodkie i aromatyczne", "Ma wielką, spłaszczoną pestkę. Dojrzałe mango pachnie nawet przez skórkę."),
+      item("granat", "Granat", "pochodzi z Bliskiego Wschodu i okolic Morza Śródziemnego", "średni", "kwaskowato-słodki", "W środku ukryte są setki soczystych ziarenek, jak czerwone klejnoty."),
+      item("liczi", "Liczi", "pochodzi z południowych Chin", "małe", "słodkie i delikatne", "Pod czerwoną, szorstką skórką jest przezroczysty, soczysty miąższ i jedno brązowe nasiono."),
+      item("marakuja", "Marakuja", "pochodzi z Ameryki Południowej", "średnia", "kwaskowata i pachnąca", "W pomarańczowym miąższu pływają liczne pestki, które też się jada. Kwiat tej rośliny jest bardzo ozdobny."),
+      item("pitaja", "Pitaja (smoczy owoc)", "pochodzi z Ameryki Środkowej, uprawiana też w Azji", "duża", "łagodnie słodka", "Rośnie na kaktusie. Różowa skórka ma zielone łuski, a w białym miąższu widać mnóstwo drobnych czarnych pestek."),
+    ],
+  },
 };
 
 export function collectionById(id) {
   return COLLECTIONS[id] || COLLECTIONS.kot;
+}
+
+export function collectionMenu(collection) {
+  return collection?.menu || "Moja kolekcja";
 }
 
 export function breedById(collectionId, breedId) {

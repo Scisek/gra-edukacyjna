@@ -6,6 +6,8 @@ export const AVATARS = [
   { id: "komputer", label: "Komputer", collection: "komputer", collects: "Komputery", src: "assets/avatars/komputer.svg" },
   { id: "gora", label: "Góra", collection: "gory", collects: "Szczyty", src: "assets/avatars/gora.svg" },
   { id: "genealog", label: "Drzewo", collection: "genealog", collects: "Genealogia", src: "assets/avatars/genealog.svg" },
+  { id: "kwiat", label: "Kwiat", collection: "kwiat", collects: "Kwiaty", src: "assets/avatars/kwiat.svg" },
+  { id: "owoc", label: "Owoc", collection: "owoc", collects: "Owoce", src: "assets/avatars/owoc.svg" },
 ];
 
 export function avatarById(id) {

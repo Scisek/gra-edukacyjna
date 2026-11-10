@@ -19,21 +19,51 @@ function adultMath(level) {
 
 function adultGeo(level) {
   const tier = level.tier || 1;
-  const where = tier <= 1
-    ? (country) => country.band >= 3
-    : tier === 2
-      ? (country) => country.band >= 3
-      : (country) => country.band >= 3;
-  const detail = ["", "Mniej znane kraje · 4 odpowiedzi", "Podobne flagi i stolice", "Rzadkie państwa", "Trudny świat na czas"][tier] || "Trudniejsze kraje";
+  if (tier <= 1) {
+    return {
+      ...level,
+      adult: true,
+      band: 1,
+      options: 3,
+      preferLike: false,
+      where: (country) => country.band === 1,
+      detail: "Znane kraje i sąsiedzi · 3 odpowiedzi",
+      seconds: 0,
+    };
+  }
+  if (tier === 2) {
+    return {
+      ...level,
+      adult: true,
+      band: 2,
+      options: 4,
+      preferLike: false,
+      where: (country) => country.band === 2,
+      detail: "Kraje średnio znane · 4 odpowiedzi",
+      seconds: 0,
+    };
+  }
+  if (tier === 3) {
+    return {
+      ...level,
+      adult: true,
+      band: 3,
+      options: 4,
+      preferLike: true,
+      where: (country) => country.band >= 3,
+      detail: "Rzadsze państwa i podobne flagi",
+      seconds: 0,
+    };
+  }
   return {
     ...level,
     adult: true,
     band: 4,
     options: 4,
-    preferLike: tier >= 2,
-    where,
-    detail,
-    seconds: tier === 4 ? (level.seconds || 20) : 0,
+    preferLike: true,
+    where: () => true,
+    detail: "Cały świat na czas",
+    seconds: level.seconds || 20,
   };
 }
 
@@ -41,7 +71,20 @@ export function presentLevel(profile, level, subjectId) {
   if (!level || !isAdult(profile)) return level;
   if (subjectId === "geografia-panstwa") return adultGeo(level);
   if (subjectId === "geografia-polska") {
-    return { ...level, adult: true, options: 4, band: Math.max(level.band || 1, 2), detail: "Mniej znane miasta i dokładniejsze miejsce" };
+    const tier = level.tier || 1;
+    if (tier <= 1) {
+      return { ...level, adult: true, options: 3, band: 1, detail: "Największe miasta, stuknij województwo" };
+    }
+    if (tier === 2) {
+      return { ...level, adult: true, options: 4, band: 2, detail: "Duże miasta, stuknij województwo" };
+    }
+    return {
+      ...level,
+      adult: true,
+      options: 4,
+      band: Math.max(level.band || 1, tier),
+      detail: tier === 3 ? "Mniejsze miasta, szeroki promień" : "Małe miasta, dokładniejsze miejsce",
+    };
   }
   if (subjectId === "matematyka") return adultMath(level);
   if (subjectId === "polski") {
