@@ -305,6 +305,7 @@ function conclude() {
       justUnlocked = true;
     }
     xp = addXp(profile, xp.amount);
+    app.revealBreeds = (xp.breeds || []).map((breed) => breed.id);
     badges = maybeAwardBadges(profile, subject, module);
     profile.stats.rounds += 1;
     saved = persist();

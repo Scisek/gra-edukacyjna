@@ -52,27 +52,43 @@ export function nextBreed(profile, collectionId) {
   return collectionById(collectionId).breeds.find((breed) => !owned.has(breed.id)) || null;
 }
 
-function grantBreed(profile) {
+function packBreed(collection, breed) {
+  return {
+    ...breed,
+    collectionId: collection.id,
+    art: artFor(collection.id, breed.id),
+    collectionTitle: collection.title,
+  };
+}
+
+function fillBreeds(profile) {
   const collection = activeCollection(profile);
-  if (!collection) return null;
-  const breed = nextBreed(profile, collection.id);
-  if (!breed || isTestProfile(profile)) return null;
-  bag(profile, collection.id).push(breed.id);
-  return { ...breed, collectionId: collection.id, art: artFor(collection.id, breed.id), collectionTitle: collection.title };
+  if (!collection || isTestProfile(profile)) return [];
+  const cap = Math.min(collection.breeds.length, Math.max(1, Number(profile.playerLevel) || 1));
+  const owned = bag(profile, collection.id);
+  const known = new Set(owned);
+  const fresh = [];
+  for (const breed of collection.breeds) {
+    if (owned.length >= cap) break;
+    if (known.has(breed.id)) continue;
+    owned.push(breed.id);
+    known.add(breed.id);
+    fresh.push(packBreed(collection, breed));
+  }
+  return fresh;
 }
 
 function applyLevels(profile) {
   profile.playerLevel = Math.max(1, Number(profile.playerLevel) || 1);
   profile.xp = Math.max(0, Number(profile.xp) || 0);
-  const breeds = [];
+  const breeds = fillBreeds(profile);
   let leveled = false;
   let guard = 0;
-  while (profile.xp >= xpToNext(profile.playerLevel) && guard < 60) {
+  while (profile.xp >= xpToNext(profile.playerLevel) && guard < 80) {
     profile.xp -= xpToNext(profile.playerLevel);
     profile.playerLevel += 1;
     leveled = true;
-    const breed = grantBreed(profile);
-    if (breed) breeds.push(breed);
+    breeds.push(...fillBreeds(profile));
     guard += 1;
   }
   return {
@@ -106,11 +122,13 @@ export function settleStoredXp() {
   let changed = false;
   for (const profile of profiles()) {
     if (isTestProfile(profile)) continue;
-    const level = Math.max(1, Number(profile.playerLevel) || 1);
-    const xp = Math.max(0, Number(profile.xp) || 0);
-    if (xp < xpToNext(level)) continue;
+    const before = JSON.stringify(profile.breeds || {});
+    const level = profile.playerLevel;
+    const xp = profile.xp;
     settleXp(profile);
-    changed = true;
+    if (before !== JSON.stringify(profile.breeds || {}) || level !== profile.playerLevel || xp !== profile.xp) {
+      changed = true;
+    }
   }
   if (changed) persist();
   return changed;

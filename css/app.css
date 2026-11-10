@@ -1333,8 +1333,8 @@ p {
 
 .breed-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
   margin-bottom: 16px;
 }
 
@@ -1342,52 +1342,65 @@ p {
   display: grid;
   gap: 4px;
   justify-items: center;
-  padding: 8px;
+  padding: 6px;
   color: var(--ink);
   text-align: center;
-  font-size: 0.78rem;
+  font-size: 0.68rem;
+  line-height: 1.15;
 }
 
 .breed-stage {
   position: relative;
   display: grid;
-  place-items: end center;
+  place-items: center;
   width: 100%;
   aspect-ratio: 1;
   overflow: hidden;
-  border-radius: 16px;
-  background:
-    radial-gradient(circle at 28% 18%, rgba(0, 240, 255, 0.38), transparent 42%),
-    radial-gradient(circle at 82% 78%, rgba(171, 0, 255, 0.42), transparent 48%),
-    radial-gradient(circle at 50% 60%, #1a2348, #0b0d19 72%);
-}
-
-.breed-stage::before {
-  content: "";
-  position: absolute;
-  width: 2px;
-  height: 2px;
-  border-radius: 50%;
-  box-shadow:
-    14px 22px 0 #fff,
-    46px 12px 0 rgba(255, 255, 255, 0.85),
-    72px 36px 0 #7ef6ff,
-    24px 58px 0 #fff,
-    88px 64px 0 rgba(255, 255, 255, 0.75);
-  pointer-events: none;
-}
-
-.breed-stage.is-framed::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 50% 42%, transparent 36%, rgba(11, 13, 25, 0.2) 68%, rgba(88, 0, 140, 0.55) 100%);
-  pointer-events: none;
+  border-radius: 14px;
+  background: radial-gradient(circle at 50% 42%, #1b2448, #0b0d19 72%);
 }
 
 .breed-card.is-locked .breed-art {
-  filter: blur(14px) grayscale(1) brightness(0.28);
+  filter: brightness(0) drop-shadow(0 0 6px rgba(126, 246, 255, 0.55));
+}
+
+.breed-card.is-reveal .breed-art,
+.reveal-card .breed-art.is-reveal {
+  animation: sticker-reveal 0.7s ease;
+}
+
+@keyframes sticker-reveal {
+  from { transform: scale(0.55) rotate(-8deg); filter: brightness(0); }
+  to { transform: none; filter: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breed-card.is-reveal .breed-art,
+  .reveal-card .breed-art.is-reveal {
+    animation: none;
+  }
+}
+
+.reveal-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 8px 0 0;
+}
+
+.reveal-card {
+  margin: 0;
+  width: 96px;
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+.reveal-card .breed-art {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  border-radius: 16px;
+  background: radial-gradient(circle at 50% 42%, #1b2448, #0b0d19 72%);
 }
 
 .breed-card.is-common { box-shadow: 0 0 0 2px #7ef6ff, 0 0 16px rgba(0, 240, 255, 0.35); }
@@ -1401,17 +1414,10 @@ p {
   font-size: 0.75rem;
 }
 
-.breed-stage.is-cutout .breed-art {
-  width: 92%;
-  height: 88%;
-  object-fit: contain;
-  object-position: center bottom;
-}
-
-.breed-stage.is-framed .breed-art {
+.breed-stage .breed-art {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .breed-art--lg {

@@ -32,7 +32,7 @@ Po ostatnim podpoziomie jest **Trening**: nieskończona powtórka tego, co dziec
 
 **Geografia – Polska** odpowiada się na mapie. Na łatwym i średnim poziomie dziecko stuka województwo. Zaczyna od największych miast (Warszawa, Kraków, Łódź, Wrocław, Poznań, Gdańsk, Szczecin), potem dochodzą stolice województw i coraz mniejsze miasta. Na trudnym i mistrzu stuka przybliżone miejsce; im wyżej, tym mniejszy dopuszczalny promień. Kujawsko-pomorskie ma dwie stolice: Bydgoszcz i Toruń. Lubuskie: Gorzów Wielkopolski i Zielona Góra.
 
-Kolekcje to prawdziwe zdjęcia (Wikimedia Commons, autor i licencja na karcie oraz w `CREDITS.md`). Obrazek profilu wybiera własną kolekcję: kot, pies, niedźwiedź, dinozaur, komputer, góra albo drzewo genealogiczne. Obrazek można zmienić później; poziom i XP zostają, a liczba odkrytych kart odpowiada liczbie awansów. Stary obrazek bez kolekcji (na przykład lis) prosi raz o nowy wybór.
+Kolekcje to oryginalne naklejki (zobacz `CREDITS.md`). Obrazek profilu wybiera własną kolekcję: kot, pies, niedźwiedź, dinozaur, komputer, góra albo drzewo genealogiczne. Obrazek można zmienić później; poziom i XP zostają, a liczba odkrytych kart jest równa poziomowi, najwyżej szesnastu. Stary obrazek bez kolekcji (na przykład lis) prosi raz o nowy wybór.
 
 Przy zakładaniu profilu wybiera się **Dziecko** albo **Dorosły**. Dorosły od razu dostaje trudniejsze pytania: większe liczby, mniej znane kraje i miasta, słowa z kilkoma pułapkami. Rodzic nadal widzi wszystko. Znane kraje są na początku, a na poziomie Mistrz można trafić na każdy kraj z listy.
 
@@ -89,7 +89,7 @@ Zapis jest w `localStorage` tej przeglądarki. Inna przeglądarka, inne urządze
 
 Na górze widać pasek XP i napis **Poziom gracza**. Ten sam przelicznik działa w każdym module. Mistrz daje około dziesięć razy więcej XP niż Łatwy, Średni i Trudny leżą pomiędzy, a kolejne podpoziomy w obrębie poziomu dokładają jeszcze odrobinę.
 
-Gdy pasek się wypełni, poziom rośnie i dziecko dostaje następną rasę ze swojej kolekcji. Karta rasy (pochodzenie, wielkość, charakter, ciekawostka) jest po polsku w `js/data/breeds.js`. Rysunki to pliki SVG w `assets/breeds/` — można je podmienić.
+Gdy pasek się wypełni, poziom rośnie. Poziom N odsłania kartę N w kolekcji. Po szesnastej karcie widać napis „Kolekcja ukończona!”, a XP i poziomy rosną dalej. Opis karty jest po polsku w `js/data/breeds.js`. Naklejki leżą w `assets/photos/`.
 
 Odznaki są osobno dla każdego egzaminu Mix (przedmiot i poziom trudności). Nazwy zależą od kolekcji obrazka: koty, psy, dinozaury, komputery, szczyty albo genealogia. XP jest jedno, wspólne dla wszystkich modułów.
 

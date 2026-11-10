@@ -243,7 +243,7 @@ export function setAvatar(id, avatarId) {
   const collectionId = collectionForAvatar(avatarId);
   const collection = collectionId ? collectionById(collectionId) : null;
   if (!profile || !collection || !AVATARS.some((item) => item.id === avatarId)) return;
-  const count = Math.min(collection.breeds.length, Math.max(0, (profile.playerLevel || 1) - 1));
+  const count = Math.min(collection.breeds.length, Math.max(1, profile.playerLevel || 1));
   profile.avatar = avatarId;
   profile.breeds = profile.breeds || {};
   profile.breeds[collectionId] = collection.breeds.slice(0, count).map((breed) => breed.id);

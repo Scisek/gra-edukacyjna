@@ -32,7 +32,6 @@ import { isAdult, presentLevel } from "./audience.js";
 import { canPlayLevel, examTierOpen, resultHeadline, trainingOpen, unlockedIndex } from "./progress.js";
 import { AVATARS, avatarById, avatarNeedsChoice, collectionForAvatar } from "./avatars.js";
 import { artFor, collectionById, rarityOf } from "./data/breeds.js";
-import { creditFor } from "./data/photo-credits.js";
 import { badgesOf, earnedBreeds, playerLevelOf, xpInto, xpToNext } from "./xp.js";
 import { topMisses } from "./review.js";
 import { countryById } from "./data/countries.js";
@@ -40,19 +39,10 @@ import { VOIVODESHIPS } from "./data/poland.js";
 import { MAP_BOX, project, REGIONS, unproject } from "./data/poland-map.js";
 import { areaText, peopleText, sizeText } from "./geo-info.js";
 
-const FRAMED_BREEDS = new Set(["stegozaur", "hdd", "ram"]);
-
 function breedStage(collectionId, breedId, className) {
-  const framed = collectionId === "gory" || collectionId === "genealog" || FRAMED_BREEDS.has(breedId);
-  return el("span", { class: framed ? "breed-stage is-framed" : "breed-stage is-cutout" }, [
+  return el("span", { class: "breed-stage" }, [
     el("img", { class: className, src: artFor(collectionId, breedId), alt: "" }),
   ]);
-}
-
-function creditLine(collectionId, breedId) {
-  const credit = creditFor(collectionId, breedId);
-  if (!credit) return null;
-  return el("p", { class: "credit", text: `Zdjęcie: ${credit.author}. ${credit.license}.` });
 }
 
 function avatarImg(id, className) {
@@ -637,11 +627,19 @@ function viewResults() {
   const hasNext = !round.level.training && nextIndex < module.levels.length && canPlayLevel(profile, subject, module, nextIndex);
   const breedLine = (xp?.breeds || []).map((breed) => breed.name).join(", ");
   const badgeLine = (badges || []).map((badge) => badge.title).join(", ");
+  const collectionFull = !test && xp?.level >= 16;
   let rewardText = test
     ? "Tryb testowy — ten wynik nie jest zapisywany."
     : `+${xp?.amount || 0} XP. Pasek rośnie tak samo w nauce i w egzaminie.`;
-  if (!test && xp?.leveled && breedLine) rewardText = `Poziom gracza ${xp.level}! Nowa rasa: ${breedLine}.`;
-  else if (!test && xp?.leveled) rewardText = `Poziom gracza ${xp.level}! W tej kolekcji masz już wszystkie rasy.`;
+  if (!test && xp?.leveled && breedLine) {
+    rewardText = collectionFull
+      ? `Poziom gracza ${xp.level}! Nowa rasa: ${breedLine}. Kolekcja ukończona!`
+      : `Poziom gracza ${xp.level}! Nowa rasa: ${breedLine}.`;
+  } else if (!test && xp?.leveled && collectionFull) {
+    rewardText = `Poziom gracza ${xp.level}! Kolekcja ukończona!`;
+  } else if (!test && xp?.leveled) {
+    rewardText = `Poziom gracza ${xp.level}!`;
+  }
   if (!test && badgeLine) rewardText = `${rewardText} Odznaka: ${badgeLine}.`;
   return screen([
     el("p", { class: "kicker", text: `${subject.title} · ${module.title} · ${round.level.title}` }),
@@ -652,6 +650,10 @@ function viewResults() {
       !test && improved ? el("p", { class: "hint", text: "Nowy rekord na tym poziomie." }) : null,
       !test && justUnlocked ? el("p", { class: "hint", text: `Odblokowano poziom ${module.levels[nextIndex].title}.` }) : null,
       el("p", { class: "lede", text: rewardText }),
+      (xp?.breeds || []).length ? el("div", { class: "reveal-row" }, xp.breeds.map((breed) => el("figure", { class: "reveal-card" }, [
+        el("img", { class: "breed-art is-reveal", src: breed.art, alt: "" }),
+        el("figcaption", { text: breed.name }),
+      ]))) : null,
       round.result.hints ? el("p", { class: "hint", text: `Podpowiedzi: ${round.result.hints}. Każda obniża wynik o ćwierć pytania.` }) : null,
     ]),
     round.review.length ? el("section", { class: "review" }, [
@@ -684,7 +686,9 @@ function viewCollection() {
   if (!profile) return viewProfiles();
   const collection = collectionById(collectionForAvatar(profile.avatar));
   const owned = new Set(earnedBreeds(profile, collection.id));
+  const complete = !isTestProfile(profile) && owned.size >= collection.breeds.length;
   const picked = collection.breeds.find((breed) => breed.id === app.breed) || null;
+  const revealed = new Set(app.revealBreeds || []);
   const badges = badgesOf(profile).filter((badge) => !isTestProfile(profile) || true);
   const subjectName = { geografia: "Geografia", polski: "Język polski", matematyka: "Matematyka" };
   return screen([
@@ -693,15 +697,17 @@ function viewCollection() {
       go("home");
     }),
     el("h1", { text: `Kolekcja · ${collection.title}` }),
-    el("p", { class: "lede", text: isTestProfile(profile)
-      ? "Podgląd całej kolekcji. W trybie testowym nic się nie zapisuje."
-      : "Gdy pasek XP się zapełni, dostajesz kolejną rasę. Odznaki spadają za cały poziom egzaminu Mix." }),
+    complete
+      ? el("p", { class: "banner is-good", role: "status", text: "Kolekcja ukończona!" })
+      : el("p", { class: "lede", text: isTestProfile(profile)
+        ? "Podgląd całej kolekcji. W trybie testowym nic się nie zapisuje."
+        : "Poziom 1 odsłania pierwszą kartę, poziom 16 ostatnią. Dalej rośnie tylko XP. Odznaki spadają za cały poziom egzaminu Mix." }),
     el("p", { class: "tile__meta", text: `${owned.size} z ${collection.breeds.length}` }),
     el("div", { class: "breed-grid" }, collection.breeds.map((breed) => {
       const open = owned.has(breed.id);
       return el("button", {
         type: "button",
-        class: `breed-card is-${rarityOf(collection.breeds.indexOf(breed), collection.breeds.length)}${open ? "" : " is-locked"}`,
+        class: `breed-card is-${rarityOf(collection.breeds.indexOf(breed), collection.breeds.length)}${open ? "" : " is-locked"}${open && revealed.has(breed.id) ? " is-reveal" : ""}`,
         onClick: () => {
           if (!open) return;
           app.breed = breed.id;
@@ -719,7 +725,6 @@ function viewCollection() {
       el("p", { text: `${collection.labels?.size || "Wielkość"}: ${picked.size}` }),
       el("p", { text: `${collection.labels?.character || "Charakter"}: ${picked.character}` }),
       el("p", { class: "fact-card__fact", text: picked.fact }),
-      creditLine(collection.id, picked.id),
     ]) : null,
     el("button", {
       type: "button",
@@ -838,8 +843,8 @@ function viewTheme() {
     forced ? null : back("Wróć", () => go(app.route.from || "home")),
     el("h1", { text: forced ? "Wybierz nowy obrazek" : "Zmień obrazek" }),
     el("p", { class: "lede", text: forced
-      ? `${profile.name}, ten obrazek nie ma już własnej kolekcji. Wybierz nowy. Poziom i XP zostają. Karty kolekcji dopasują się do liczby awansów.`
-      : "Nowy obrazek zmienia kolekcję. Poziom i XP zostają. Odkryte karty to tyle, ile masz awansów." }),
+      ? `${profile.name}, ten obrazek nie ma już własnej kolekcji. Wybierz nowy. Poziom i XP zostają. Odsłonięte karty to tyle, ile wynosi poziom, najwyżej szesnaście.`
+      : "Nowy obrazek zmienia kolekcję. Poziom i XP zostają. Odsłonięte karty to tyle, ile wynosi poziom, najwyżej szesnaście." }),
     el("div", { class: "avatar-grid" }, AVATARS.map((avatar) => el("button", {
       type: "button",
       class: "avatar-pick",

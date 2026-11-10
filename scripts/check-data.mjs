@@ -126,6 +126,13 @@ for (let n = 1; n < 12; n += 1) {
 const over = { playerLevel: 4, xp: 200, avatar: "kot", breeds: { kot: [] } };
 settleXp(over);
 if (over.playerLevel < 5 || over.xp >= xpToNext(over.playerLevel)) fail(`nadmiar XP nie awansuje: poziom ${over.playerLevel}, ${over.xp}`);
+const starter = { playerLevel: 1, xp: 0, avatar: "kot", breeds: {} };
+settleXp(starter);
+if (starter.breeds.kot?.length !== 1) fail("poziom 1 powinien odsłonić pierwszą kartę");
+const finished = { playerLevel: 16, xp: xpToNext(16), avatar: "kot", breeds: { kot: [] } };
+settleXp(finished);
+if (finished.breeds.kot.length !== 16) fail(`kolekcja po szesnastu: ${finished.breeds.kot.length}`);
+if (finished.playerLevel < 17) fail("po pełnej kolekcji poziom ma rosnąć dalej");
 const adultLevel = presentLevel({ audience: "dorosly" }, { tier: 1, step: 1, band: 1, min: 0, max: 10, options: 3, questions: 5 }, "matematyka");
 for (let i = 0; i < 20; i += 1) {
   const question = makeMathQuestion("dodawanie", adultLevel, new Set());
@@ -139,7 +146,7 @@ const easyXp = roundXp({ tier: 1, step: 1 }, 2);
 const hardXp = roundXp({ tier: 4, step: 1 }, 2);
 if (hardXp < easyXp * 8 || hardXp > easyXp * 12) fail(`mnożnik XP ${hardXp}/${easyXp}`);
 for (const collection of Object.values(COLLECTIONS)) {
-  if (collection.breeds.length < 8 || collection.breeds.length > 12 || collection.badges.length !== 4) fail(`kolekcja ${collection.id}`);
+  if (collection.breeds.length !== 16 || collection.badges.length !== 4) fail(`kolekcja ${collection.id}`);
   for (const breed of collection.breeds) {
     if (!breed.origin || !breed.character || !breed.fact || !breed.size) fail(`niepełna rasa ${breed.id}`);
     try {
