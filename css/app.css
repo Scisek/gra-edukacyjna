@@ -1108,13 +1108,20 @@ p {
 
 .gap {
   display: inline-block;
-  min-width: 0.7em;
-  margin: 0 0.08em;
+  box-sizing: content-box;
+  width: 1.7em;
+  min-width: 1.7em;
+  max-width: 1.7em;
+  margin: 0 0.12em;
   border-bottom: 3px solid var(--gold);
+  text-align: center;
+  vertical-align: baseline;
 }
 
-.gap-wide {
-  min-width: 1.45em;
+.gap.is-filled {
+  width: auto;
+  min-width: 0;
+  max-width: none;
 }
 
 .quiz .banner {
@@ -1513,16 +1520,16 @@ p {
 }
 
 .pl-map {
-  width: min(100%, 420px, calc(52vh * 360 / 400));
+  width: min(100%, 420px, calc(52vh * 422.82 / 400));
   height: auto;
-  aspect-ratio: 360 / 400;
+  aspect-ratio: 422.82 / 400;
   display: block;
   margin: 0 auto;
   touch-action: manipulation;
 }
 
 .quiz-map .pl-map {
-  width: min(100%, 420px, calc(54vh * 360 / 400));
+  width: min(100%, 420px, calc(54vh * 422.82 / 400));
 }
 
 .quiz-map .title-figure {
