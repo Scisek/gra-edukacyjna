@@ -8,6 +8,7 @@ import { subjects } from "../js/registry.js";
 import { COLLECTIONS } from "../js/data/breeds.js";
 import { roundXp, settleXp, xpToNext } from "../js/xp.js";
 import { cities, VOIVODESHIPS } from "../js/data/poland.js";
+import { MAP_BOX, project, regionAt } from "../js/data/poland-map.js";
 import { cityPool } from "../js/modules/poland.js";
 import { presentLevel } from "../js/audience.js";
 
@@ -186,6 +187,26 @@ if (!COLLECTIONS.kot.menu || COLLECTIONS.genealog.menu !== "Kolekcja genealoga")
 if (COLLECTIONS.kwiat?.menu !== "Kolekcja kwiatów" || COLLECTIONS.owoc?.menu !== "Kolekcja owoców") fail("brak kolekcji kwiatów albo owoców");
 if (COLLECTIONS.kwiat.breeds[0].id !== "stokrotka" || COLLECTIONS.owoc.breeds[0].id !== "jablko") fail("zła kolejność nowych kolekcji");
 if (countries.length !== 197 || countries.some((country) => !country.capital)) fail("brak stolicy");
+const mapAspect = MAP_BOX.width / MAP_BOX.height;
+if (mapAspect < 1.04 || mapAspect > 1.08) fail(`mapa ma złe proporcje ${mapAspect.toFixed(3)}`);
+function kmBetween(a, b) {
+  const rad = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * rad;
+  const dLon = (b.lon - a.lon) * rad;
+  const h = Math.sin(dLat / 2) ** 2
+    + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLon / 2) ** 2;
+  return 6371 * 2 * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+const city = (name) => cities.find((item) => item.name === name);
+const warsawKrakow = kmBetween(city("Warszawa"), city("Kraków"));
+const szczecinRzeszow = kmBetween(city("Szczecin"), city("Rzeszów"));
+if (warsawKrakow < 230 || warsawKrakow > 280) fail(`Warszawa–Kraków ${Math.round(warsawKrakow)} km`);
+if (szczecinRzeszow < 600 || szczecinRzeszow > 680) fail(`Szczecin–Rzeszów ${Math.round(szczecinRzeszow)} km`);
+for (const name of ["Warszawa", "Kraków", "Szczecin", "Rzeszów"]) {
+  const item = city(name);
+  const spot = project(item.lon, item.lat);
+  if (regionAt(spot.x, spot.y) !== item.voi) fail(`${name} wypadło poza województwo`);
+}
 
 if (errors.length) {
   console.error(errors.join("\n"));

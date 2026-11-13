@@ -553,7 +553,9 @@ function figureBlock(figure, question, round) {
       el("p", { class: "gap-meaning", text: figure.meaning }),
       el("p", { class: "gap-word" }, [
         figure.before,
-        el("span", { class: figure.missing.length > 1 ? "gap gap-wide" : "gap", text: "\u00a0" }),
+        round?.locked
+          ? el("span", { class: "gap is-filled", text: figure.missing })
+          : el("span", { class: "gap", text: "\u00a0" }),
         figure.after,
       ]),
     ]);
